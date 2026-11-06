@@ -1,0 +1,662 @@
+
+{% extends "pokemon/base.html" %}
+
+{% block titulo %}{{ titulo }} | Pokédex{% endblock %}
+{% block encabezado %}Gestión de Pokémon{% endblock %}
+
+{% block estilos %}
+<style>
+    .pokemon-form {
+        width: 100%;
+        color: #edf4ff;
+        animation: entrada .45s ease;
+    }
+
+    .form-intro {
+        margin-bottom: 25px;
+    }
+
+    .form-intro h1 {
+        font-size: 29px;
+        margin: 0 0 9px;
+        font-weight: 800;
+    }
+
+    .form-intro p {
+        color: #a4b5cc;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .form-panel {
+        background: #111e32;
+        border: 1px solid #2a405e;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 15px 40px rgba(0,0,0,.15);
+    }
+
+    .form-header {
+        padding: 23px 27px;
+        background:
+            radial-gradient(circle at 95% 0%, rgba(57,136,255,.16), transparent 35%),
+            #14243b;
+        border-bottom: 1px solid #2a405e;
+    }
+
+    .form-header h2 {
+        font-size: 18px;
+        margin: 0 0 7px;
+    }
+
+    .form-header p {
+        font-size: 13px;
+        color: #a4b5cc;
+        margin: 0;
+    }
+
+    .form-body {
+        padding: 28px;
+    }
+
+    .form-section {
+        margin-bottom: 34px;
+        animation: aparecer .5s ease both;
+    }
+
+    .form-section:last-of-type {
+        margin-bottom: 25px;
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 14px;
+        margin-bottom: 21px;
+        border-bottom: 1px solid #2a405e;
+    }
+
+    .section-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        flex-shrink: 0;
+        border-radius: 9px;
+        background: rgba(57,136,255,.15);
+        border: 1px solid rgba(57,136,255,.3);
+        color: #80b8ff;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .section-title h3 {
+        margin: 0;
+        font-size: 16px;
+        color: #dceaff;
+    }
+
+    .section-title p {
+        margin: 4px 0 0;
+        color: #8195b0;
+        font-size: 12px;
+    }
+
+    .fields-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        min-width: 0;
+    }
+
+    .field-full {
+        grid-column: 1 / -1;
+    }
+
+    .field label {
+        color: #d4e1f2;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .field input:not([type="checkbox"]),
+    .field select,
+    .field textarea {
+        width: 100%;
+        min-height: 49px;
+        padding: 13px 15px;
+        color: #edf4ff;
+        background: #0b1424;
+        border: 1px solid #354b69;
+        border-radius: 9px;
+        outline: none;
+        font-family: inherit;
+        font-size: 14px;
+        transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+
+    .field textarea {
+        min-height: 105px;
+        resize: vertical;
+        line-height: 1.65;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+        border-color: #3988ff;
+        background: #101e33;
+        box-shadow: 0 0 0 4px rgba(57,136,255,.12);
+    }
+
+    .field input[type="file"] {
+        padding: 11px;
+        cursor: pointer;
+    }
+
+    .field input[type="file"]::file-selector-button {
+        padding: 9px 13px;
+        margin-right: 12px;
+        color: white;
+        background: #245a9c;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .field input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: #3988ff;
+        cursor: pointer;
+    }
+
+    .field select option {
+        background: #0b1424;
+        color: #edf4ff;
+    }
+
+    .field-help {
+        color: #91a4be;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .checkbox-field {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 49px;
+        padding: 10px 14px;
+        background: #0b1424;
+        border: 1px solid #354b69;
+        border-radius: 9px;
+        color: #d4e1f2;
+        font-size: 14px;
+    }
+
+    .errorlist {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        color: #ff8995;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .error-panel {
+        padding: 15px 18px;
+        margin-bottom: 24px;
+        color: #ffabb2;
+        background: rgba(241,109,122,.12);
+        border: 1px solid rgba(241,109,122,.28);
+        border-radius: 10px;
+        font-size: 13px;
+    }
+
+    .image-preview {
+        display: none;
+        align-items: center;
+        gap: 20px;
+        padding: 17px;
+        margin-top: 10px;
+        background: #0b1424;
+        border: 1px solid #354b69;
+        border-radius: 11px;
+        animation: aparecer .3s ease;
+    }
+
+    .image-preview.visible {
+        display: flex;
+    }
+
+    .image-preview img,
+    .current-image img {
+        width: 125px;
+        height: 125px;
+        object-fit: contain;
+        padding: 8px;
+        background: #182a43;
+        border-radius: 9px;
+    }
+
+    .image-preview p,
+    .current-image p {
+        color: #a4b5cc;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .current-image {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 17px;
+        margin-top: 12px;
+        background: #0b1424;
+        border: 1px solid #354b69;
+        border-radius: 11px;
+    }
+
+    .current-image strong {
+        color: #dceaff;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding-top: 23px;
+        border-top: 1px solid #2a405e;
+    }
+
+    .form-button {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 47px;
+        padding: 12px 21px;
+        border: none;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 800;
+        text-decoration: none;
+        cursor: pointer;
+        transition: transform .2s, filter .2s, box-shadow .2s;
+    }
+
+    .form-button:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.12);
+    }
+
+    .button-save {
+        color: white;
+        background: linear-gradient(135deg, #3988ff, #2463c1);
+        box-shadow: 0 6px 18px rgba(57,136,255,.18);
+    }
+
+    .button-cancel {
+        color: #d4e1f2;
+        background: #263b57;
+    }
+
+    @keyframes entrada {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes aparecer {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 700px) {
+        .form-body {
+            padding: 18px;
+        }
+
+        .fields-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .field-full {
+            grid-column: auto;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+        .form-button {
+            width: 100%;
+        }
+
+        .image-preview,
+        .current-image {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .pokemon-form,
+        .form-section,
+        .image-preview {
+            animation: none;
+        }
+
+        * {
+            transition: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="pokemon-form">
+
+    <div class="form-intro">
+        <h1>{{ titulo }}</h1>
+        <p>
+            Registra toda la información del Pokémon.
+            Puedes agregar sus tipos, habilidades, evoluciones y estadísticas.
+        </p>
+    </div>
+
+    <section class="form-panel">
+
+        <header class="form-header">
+            <h2>Ficha de información Pokémon</h2>
+            <p>Completa los campos y guarda los cambios en el sistema.</p>
+        </header>
+
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+            class="form-body"
+            id="formularioPokemon"
+        >
+            {% csrf_token %}
+
+            {% if formulario.non_field_errors %}
+                <div class="error-panel">
+                    {{ formulario.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% if formulario.errors %}
+                <div class="error-panel">
+                    Hay campos que necesitan corregirse. Revisa los mensajes debajo de cada campo.
+                </div>
+            {% endif %}
+
+            <section class="form-section">
+                <div class="section-title">
+                    <span class="section-number">01</span>
+                    <div>
+                        <h3>Información general</h3>
+                        <p>Identificación y nombre del Pokémon.</p>
+                    </div>
+                </div>
+
+                <div class="fields-grid">
+                    {% for campo in formulario %}
+                        {% if campo.name == "numero" or campo.name == "nombre" %}
+                            <div class="field">
+                                <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                                {{ campo }}
+                                {{ campo.errors }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="section-title">
+                    <span class="section-number">02</span>
+                    <div>
+                        <h3>Imágenes</h3>
+                        <p>Sube una imagen desde tu computador o utiliza una dirección web.</p>
+                    </div>
+                </div>
+
+                <div class="fields-grid">
+                    {% if formulario.imagen_archivo %}
+                        <div class="field field-full">
+                            <label for="{{ formulario.imagen_archivo.id_for_label }}">
+                                Imagen desde el computador
+                            </label>
+
+                            {{ formulario.imagen_archivo }}
+
+                            <span class="field-help">
+                                Selecciona una imagen JPG, PNG o WEBP.
+                            </span>
+
+                            {{ formulario.imagen_archivo.errors }}
+
+                            <div class="image-preview" id="imagePreview">
+                                <img id="selectedImage" alt="Vista previa">
+                                <p>Esta es la imagen que seleccionaste. Se guardará al enviar el formulario.</p>
+                            </div>
+
+                            {% if pokemon and pokemon.imagen_archivo %}
+                                <div class="current-image">
+                                    <img src="{{ pokemon.imagen_archivo.url }}" alt="{{ pokemon.nombre }}">
+                                    <div>
+                                        <p><strong>Imagen guardada actualmente</strong></p>
+                                        <p>Si no seleccionas otra imagen, se conservará la actual.</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {% for campo in formulario %}
+                        {% if campo.name == "imagen" or campo.name == "imagen_oficial" %}
+                            <div class="field field-full">
+                                <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                                {{ campo }}
+                                <span class="field-help">Campo opcional.</span>
+                                {{ campo.errors }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="section-title">
+                    <span class="section-number">03</span>
+                    <div>
+                        <h3>Características</h3>
+                        <p>Datos físicos y clasificación.</p>
+                    </div>
+                </div>
+
+                <div class="fields-grid">
+                    {% for campo in formulario %}
+                        {% if campo.name == "altura" or campo.name == "peso" or campo.name == "experiencia_base" %}
+                            <div class="field">
+                                <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                                {{ campo }}
+                                {{ campo.errors }}
+                            </div>
+                        {% endif %}
+
+                        {% if campo.name == "es_legendario" %}
+                            <div class="field">
+                                <label>{{ campo.label }}</label>
+                                <div class="checkbox-field">
+                                    {{ campo }}
+                                    <span>¿Este Pokémon es legendario?</span>
+                                </div>
+                                {{ campo.errors }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="section-title">
+                    <span class="section-number">04</span>
+                    <div>
+                        <h3>Tipos, habilidades y evoluciones</h3>
+                        <p>Escribe únicamente la información que corresponda a este Pokémon.</p>
+                    </div>
+                </div>
+
+                <div class="fields-grid">
+
+                    {% if formulario.tipos_texto %}
+                        <div class="field">
+                            <label for="{{ formulario.tipos_texto.id_for_label }}">Tipos del Pokémon</label>
+                            {{ formulario.tipos_texto }}
+                            <span class="field-help">
+                                Separa los tipos con comas. Ejemplo: Planta, Veneno.
+                                Los tipos nuevos se registran automáticamente.
+                            </span>
+                            {{ formulario.tipos_texto.errors }}
+                        </div>
+                    {% endif %}
+
+                    {% if formulario.habilidades_texto %}
+                        <div class="field">
+                            <label for="{{ formulario.habilidades_texto.id_for_label }}">Habilidades</label>
+                            {{ formulario.habilidades_texto }}
+                            <span class="field-help">
+                                Escribe sus habilidades separadas por comas.
+                                Si no tiene ninguna registrada, deja el campo vacío.
+                            </span>
+                            {{ formulario.habilidades_texto.errors }}
+                        </div>
+                    {% endif %}
+
+                    {% if formulario.evoluciones_texto %}
+                        <div class="field field-full">
+                            <label for="{{ formulario.evoluciones_texto.id_for_label }}">Evoluciones</label>
+                            {{ formulario.evoluciones_texto }}
+                            <span class="field-help">
+                                Escribe el número o nombre de Pokémon que ya estén registrados.
+                                Ejemplo: 2, Ivysaur.
+                            </span>
+                            {{ formulario.evoluciones_texto.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="section-title">
+                    <span class="section-number">05</span>
+                    <div>
+                        <h3>Entrenador asignado</h3>
+                        <p>Relaciona el Pokémon con un entrenador, si corresponde.</p>
+                    </div>
+                </div>
+
+                <div class="fields-grid">
+                    {% if formulario.entrenador %}
+                        <div class="field">
+                            <label for="{{ formulario.entrenador.id_for_label }}">
+                                {{ formulario.entrenador.label }}
+                            </label>
+                            {{ formulario.entrenador }}
+                            {{ formulario.entrenador.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="section-title">
+                    <span class="section-number">06</span>
+                    <div>
+                        <h3>Estadísticas de combate</h3>
+                        <p>Valores de rendimiento y capacidades del Pokémon.</p>
+                    </div>
+                </div>
+
+                <div class="fields-grid">
+                    {% for campo in formulario %}
+                        {% if campo.name == "hp" or campo.name == "ataque" or campo.name == "defensa" or campo.name == "ataque_especial" or campo.name == "defensa_especial" or campo.name == "velocidad" %}
+                            <div class="field">
+                                <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                                {{ campo }}
+                                {{ campo.errors }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+
+            <div class="form-actions">
+                <a href="{% url 'pokemon_lista' %}" class="form-button button-cancel">
+                    Cancelar
+                </a>
+
+                <button type="submit" class="form-button button-save">
+                    {{ accion }}
+                </button>
+            </div>
+
+        </form>
+    </section>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const selector = document.getElementById("id_imagen_archivo");
+    const preview = document.getElementById("imagePreview");
+    const imagen = document.getElementById("selectedImage");
+
+    if (!selector || !preview || !imagen) return;
+
+    let urlAnterior = null;
+
+    selector.addEventListener("change", function () {
+        const archivo = this.files[0];
+
+        if (urlAnterior) {
+            URL.revokeObjectURL(urlAnterior);
+            urlAnterior = null;
+        }
+
+        if (!archivo) {
+            preview.classList.remove("visible");
+            imagen.removeAttribute("src");
+            return;
+        }
+
+        if (!["image/jpeg", "image/png", "image/webp"].includes(archivo.type)) {
+            alert("Selecciona una imagen JPG, PNG o WEBP.");
+            this.value = "";
+            preview.classList.remove("visible");
+            return;
+        }
+
+        urlAnterior = URL.createObjectURL(archivo);
+        imagen.src = urlAnterior;
+        preview.classList.add("visible");
+    });
+});
+</script>
+{% endblock %}

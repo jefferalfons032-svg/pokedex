@@ -1,0 +1,1492 @@
+{% extends "pokemon/base.html" %}
+
+{% block titulo %}{{ titulo }} | Pokédex{% endblock %}
+
+{% block encabezado %}
+<div class="encabezado-formulario">
+    <div>
+        <span class="encabezado-etiqueta">CENTRO DE GESTIÓN POKÉMON</span>
+        <h1>{{ titulo }}</h1>
+        <p>Administra y organiza los datos de tu mundo Pokémon.</p>
+    </div>
+
+    <a href="{% url 'modulo_lista' modulo %}" class="boton-volver">
+        <span>←</span> Volver al módulo
+    </a>
+</div>
+{% endblock %}
+
+{% block estilos %}
+<style>
+.formulario-pagina {
+    width: 100%;
+    max-width: 1220px;
+    margin: 0 auto;
+    color: #edf4ff;
+    animation: entrada .4s ease both;
+}
+
+@keyframes entrada {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.encabezado-formulario {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.encabezado-etiqueta {
+    color: #f17b8a;
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: 2px;
+}
+
+.encabezado-formulario h1 {
+    margin: 8px 0;
+    color: #fff;
+    font-size: clamp(26px, 4vw, 36px);
+    font-weight: 850;
+}
+
+.encabezado-formulario p {
+    margin: 0;
+    color: #9db0c8;
+    font-size: 14px;
+}
+
+.boton-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px 16px;
+    border: 1px solid #385371;
+    border-radius: 10px;
+    background: #192d45;
+    color: #eaf2ff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 750;
+    transition: .2s ease;
+}
+
+.boton-volver:hover {
+    border-color: #e34b5c;
+    background: #263d59;
+    transform: translateY(-2px);
+}
+
+.panel-formulario {
+    margin-top: 25px;
+    overflow: hidden;
+    border: 1px solid #304862;
+    border-radius: 18px;
+    background: #14243a;
+    box-shadow: 0 18px 45px #0003;
+}
+
+.panel-superior {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 24px 27px;
+    border-bottom: 1px solid #304862;
+    background:
+        radial-gradient(circle at 90% 0%, #315c8238, transparent 35%),
+        linear-gradient(110deg, #1b3049, #17283e);
+}
+
+.panel-icono {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    place-items: center;
+    border: 1px solid #e34b5c70;
+    border-radius: 13px;
+    background: #e34b5c20;
+    color: #ff9ca8;
+    font-size: 25px;
+    font-weight: 900;
+}
+
+.panel-superior h2 {
+    margin: 0 0 5px;
+    color: white;
+    font-size: 19px;
+    font-weight: 850;
+}
+
+.panel-superior p {
+    margin: 0;
+    color: #9fb2c9;
+    font-size: 13px;
+}
+
+.panel-contenido {
+    padding: 28px;
+}
+
+.mensaje-error-general {
+    margin-bottom: 22px;
+    padding: 15px 17px;
+    border: 1px solid #a84d5d;
+    border-radius: 11px;
+    background: #492a38;
+    color: #ffd7dd;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.campos-formulario {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.campo-formulario {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.campo-ancho {
+    grid-column: 1 / -1;
+}
+
+.campo-formulario > label {
+    color: #eaf1fc;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.campo-input,
+.campo-select,
+.campo-textarea,
+.campo-archivo {
+    width: 100%;
+    min-height: 46px;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid #3a5371;
+    border-radius: 10px;
+    outline: none;
+    background: #0e1c2e;
+    color: #f3f7ff;
+    font-family: inherit;
+    font-size: 14px;
+    transition: .2s ease;
+}
+
+.campo-input::placeholder,
+.campo-textarea::placeholder {
+    color: #7187a2;
+}
+
+.campo-input:focus,
+.campo-select:focus,
+.campo-textarea:focus {
+    border-color: #5c9ce7;
+    background: #12263e;
+    box-shadow: 0 0 0 3px #5c9ce722;
+}
+
+.campo-select option {
+    background: #14243a;
+    color: white;
+}
+
+.campo-select[multiple] {
+    min-height: 145px;
+}
+
+.campo-textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.campo-archivo {
+    border-style: dashed;
+    background: #12243a;
+}
+
+.campo-archivo::file-selector-button {
+    margin-right: 12px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 7px;
+    background: #294d72;
+    color: white;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.campo-checkbox {
+    width: 19px;
+    height: 19px;
+    accent-color: #e34b5c;
+    cursor: pointer;
+}
+
+.campo-formulario:has(> .campo-checkbox) {
+    flex-direction: row;
+    align-items: center;
+    min-height: 46px;
+    padding: 11px 14px;
+    border: 1px solid #354d68;
+    border-radius: 10px;
+    background: #101f32;
+}
+
+.campo-formulario:has(> .campo-checkbox) label {
+    margin: 0;
+    cursor: pointer;
+}
+
+.ayuda-campo {
+    color: #8fa6c0;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.error-campo {
+    color: #ff9fac;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.error-campo ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+/* IMAGEN ACTUAL */
+
+.imagen-actual {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 13px;
+    border: 1px solid #354d68;
+    border-radius: 11px;
+    background: #0e1c2e;
+}
+
+.imagen-actual img {
+    width: 105px;
+    height: 105px;
+    flex-shrink: 0;
+    object-fit: contain;
+    border: 1px solid #3b5572;
+    border-radius: 10px;
+    background: #1a3049;
+}
+
+.imagen-actual span {
+    color: #a8bad0;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* SELECTOR POKÉMON */
+
+.selector-pokemon {
+    width: 100%;
+    padding: 18px;
+    border: 1px solid #395674;
+    border-radius: 15px;
+    background:
+        radial-gradient(circle at 100% 0%, #315a8033, transparent 35%),
+        #0d1a2b;
+}
+
+.selector-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 16px;
+}
+
+.selector-cabecera h3 {
+    margin: 0 0 7px;
+    color: #f5f8ff;
+    font-size: 18px;
+    font-weight: 850;
+}
+
+.selector-cabecera p {
+    max-width: 660px;
+    margin: 0;
+    color: #9eb2cb;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.selector-contador {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 13px;
+    border: 1px solid #e34b5c70;
+    border-radius: 10px;
+    background: #e34b5c1b;
+    color: #ffc4cb;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.selector-contador strong {
+    color: white;
+    font-size: 19px;
+}
+
+.selector-seleccionados {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    min-height: 0;
+    margin: 0 0 14px;
+}
+
+.selector-seleccionados:empty {
+    display: none;
+}
+
+.selector-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    border: 1px solid #3c6387;
+    border-radius: 8px;
+    background: #1b3854;
+    color: #e4f1ff;
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.selector-chip-numero {
+    color: #9ec1e6;
+}
+
+/* DESPLEGABLE */
+
+.selector-desplegable {
+    overflow: hidden;
+    border: 1px solid #3a5674;
+    border-radius: 11px;
+    background: #14263d;
+}
+
+.selector-desplegable summary {
+    position: relative;
+    display: flex;
+    min-height: 49px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 12px 16px;
+    color: #eaf3ff;
+    font-size: 13px;
+    font-weight: 850;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    transition: background .2s ease;
+}
+
+.selector-desplegable summary::-webkit-details-marker {
+    display: none;
+}
+
+.selector-desplegable summary:hover {
+    background: #1d3652;
+}
+
+.selector-desplegable summary::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+    border-right: 2px solid #9ec9f5;
+    border-bottom: 2px solid #9ec9f5;
+    transform: rotate(45deg) translateY(-3px);
+    transition: transform .2s ease;
+}
+
+.selector-desplegable[open] summary {
+    border-bottom: 1px solid #3a5674;
+    background: #1a304a;
+}
+
+.selector-desplegable[open] summary::after {
+    transform: rotate(225deg) translateY(-2px);
+}
+
+.selector-desplegable-contenido {
+    padding: 17px;
+    animation: desplegar .22s ease both;
+}
+
+@keyframes desplegar {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.selector-herramientas {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(150px, 1fr));
+    gap: 11px;
+    margin-bottom: 15px;
+}
+
+.selector-busqueda {
+    position: relative;
+}
+
+.selector-busqueda input,
+.selector-filtro {
+    width: 100%;
+    min-height: 45px;
+    box-sizing: border-box;
+    padding: 10px 13px;
+    border: 1px solid #354f6c;
+    border-radius: 10px;
+    outline: none;
+    background: #0e1c2e;
+    color: #f3f7ff;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.selector-busqueda input {
+    padding-left: 38px;
+}
+
+.selector-busqueda input::placeholder {
+    color: #8498b1;
+}
+
+.selector-busqueda::before {
+    content: "⌕";
+    position: absolute;
+    top: 50%;
+    left: 13px;
+    transform: translateY(-55%);
+    color: #a8bed8;
+    font-size: 23px;
+    pointer-events: none;
+}
+
+.selector-busqueda input:focus,
+.selector-filtro:focus {
+    border-color: #5c9ce7;
+    box-shadow: 0 0 0 3px #5c9ce722;
+}
+
+.selector-filtro option {
+    background: #14263d;
+    color: white;
+}
+
+.selector-resumen {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 13px;
+    color: #9db0c8;
+    font-size: 12px;
+}
+
+.selector-resumen strong {
+    color: #e9f2ff;
+}
+
+.selector-boton {
+    padding: 8px 11px;
+    border: 1px solid #465d78;
+    border-radius: 8px;
+    background: #1b3049;
+    color: #dce9fa;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.selector-boton:hover {
+    border-color: #e34b5c;
+    background: #452c3b;
+    color: white;
+}
+
+.selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    gap: 12px;
+}
+
+.tarjeta-pokemon {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    padding: 11px 10px 13px;
+    border: 1px solid #304762;
+    border-radius: 13px;
+    background: linear-gradient(155deg, #1a3049, #13243a);
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.tarjeta-pokemon:hover {
+    transform: translateY(-3px);
+    border-color: #659bcf;
+    background: #203b58;
+}
+
+.tarjeta-pokemon.seleccionado {
+    border-color: #e34b5c;
+    background: linear-gradient(155deg, #512b3b, #29283a);
+    box-shadow: inset 0 0 0 1px #e34b5c45;
+}
+
+.tarjeta-pokemon.seleccionado::after {
+    content: "✓";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: grid;
+    width: 23px;
+    height: 23px;
+    place-items: center;
+    border-radius: 50%;
+    background: #e34b5c;
+    color: white;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.tarjeta-pokemon input[type="checkbox"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.tarjeta-imagen {
+    display: grid;
+    width: 100%;
+    height: 112px;
+    place-items: center;
+    margin-bottom: 7px;
+    border-radius: 9px;
+    background: radial-gradient(circle, #42658a4a, #1b3049 70%, transparent);
+}
+
+.tarjeta-imagen img {
+    width: 108px;
+    height: 108px;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 5px #0005);
+    transition: transform .2s ease;
+}
+
+.tarjeta-pokemon:hover .tarjeta-imagen img {
+    transform: scale(1.08);
+}
+
+.tarjeta-numero {
+    align-self: flex-start;
+    margin: 0 0 3px 2px;
+    color: #91a9c6;
+    font-size: 10px;
+    font-weight: 850;
+}
+
+.tarjeta-nombre {
+    width: 100%;
+    overflow: hidden;
+    color: #f1f6ff;
+    font-size: 13px;
+    font-weight: 850;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tarjeta-tipos {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    min-height: 19px;
+    margin-top: 7px;
+}
+
+.etiqueta-tipo {
+    padding: 3px 6px;
+    border: 1px solid #55708d;
+    border-radius: 5px;
+    background: #263e58;
+    color: #d8e8fa;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.selector-vacio {
+    grid-column: 1 / -1;
+    padding: 30px 15px;
+    border: 1px dashed #405a77;
+    border-radius: 12px;
+    color: #a9bad0;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.selector-ayuda {
+    margin: 15px 0 0;
+    color: #8198b4;
+    font-size: 11px;
+    text-align: center;
+}
+
+/* LISTA DE RESPALDO SIN JAVASCRIPT */
+
+.lista-original ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 9px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.lista-original li {
+    list-style: none;
+}
+
+.lista-original label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px;
+    border: 1px solid #304762;
+    border-radius: 9px;
+    background: #172940;
+    color: #e5efff;
+    font-size: 12px;
+}
+
+.lista-original input {
+    accent-color: #e34b5c;
+}
+
+.selector-pokemon.activo .lista-original {
+    display: none;
+}
+
+/* BOTONES */
+
+.formulario-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 30px;
+    padding-top: 23px;
+    border-top: 1px solid #30445e;
+}
+
+.boton-formulario {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 12px 21px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 850;
+    text-decoration: none;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.boton-formulario:hover {
+    transform: translateY(-2px);
+}
+
+.boton-guardar {
+    border-color: #e04b5d;
+    background: linear-gradient(135deg, #e34b5c, #b92b40);
+    color: white;
+    box-shadow: 0 6px 17px #c32e4538;
+}
+
+.boton-guardar:hover {
+    background: linear-gradient(135deg, #f05d6d, #cc344b);
+}
+
+.boton-cancelar {
+    border-color: #3b5572;
+    background: #1b3049;
+    color: #e2edfc;
+}
+
+.boton-cancelar:hover {
+    background: #29425f;
+}
+
+/* RESPONSIVE */
+
+@media(max-width: 760px) {
+    .panel-contenido {
+        padding: 20px;
+    }
+
+    .campos-formulario {
+        grid-template-columns: 1fr;
+        gap: 19px;
+    }
+
+    .campo-ancho {
+        grid-column: auto;
+    }
+
+    .selector-herramientas {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .selector-busqueda {
+        grid-column: 1 / -1;
+    }
+
+    .selector-grid {
+        grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+    }
+}
+
+@media(max-width: 480px) {
+    .encabezado-formulario {
+        align-items: stretch;
+    }
+
+    .boton-volver {
+        justify-content: center;
+    }
+
+    .panel-contenido {
+        padding: 15px;
+    }
+
+    .selector-pokemon {
+        padding: 13px;
+    }
+
+    .selector-herramientas {
+        grid-template-columns: 1fr;
+    }
+
+    .selector-busqueda {
+        grid-column: auto;
+    }
+
+    .selector-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    .tarjeta-pokemon {
+        padding: 8px;
+    }
+
+    .tarjeta-imagen {
+        height: 95px;
+    }
+
+    .tarjeta-imagen img {
+        width: 92px;
+        height: 92px;
+    }
+
+    .formulario-acciones {
+        flex-direction: column;
+    }
+
+    .boton-formulario {
+        width: 100%;
+    }
+
+    .imagen-actual {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media(prefers-reduced-motion: reduce) {
+    .formulario-pagina,
+    .boton-volver,
+    .boton-formulario,
+    .tarjeta-pokemon,
+    .tarjeta-imagen img,
+    .selector-desplegable-contenido {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+</style>
+{% endblock %}
+
+
+{% block contenido %}
+<div class="formulario-pagina">
+
+    <section class="panel-formulario">
+
+        <div class="panel-superior">
+            <div class="panel-icono">+</div>
+
+            <div>
+                <h2>Información del registro</h2>
+                <p>
+                    Completa los campos y verifica los datos antes de guardar.
+                </p>
+            </div>
+        </div>
+
+        <div class="panel-contenido">
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% if formulario.non_field_errors %}
+                    <div class="mensaje-error-general">
+                        <strong>Hay información que debes revisar:</strong>
+                        {{ formulario.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="campos-formulario">
+
+                    {% for campo in formulario %}
+
+                        <div class="campo-formulario
+                            {% if campo.name == 'descripcion' or campo.name == 'pokemones_equipo' or campo.name == 'gimnasios' or campo.name == 'habilidades' or campo.name == 'tipos' or campo.name == 'evoluciones' or campo.name == 'items' or campo.name == 'pokemones' %}
+                                campo-ancho
+                            {% endif %}">
+
+                            {% if campo.name == "pokemones_equipo" %}
+
+                                <section
+                                    class="selector-pokemon"
+                                    id="selector-pokemon"
+                                >
+
+                                    <div class="selector-cabecera">
+
+                                        <div>
+                                            <h3>Equipo Pokémon del entrenador</h3>
+
+                                            <p>
+                                                Selecciona los Pokémon que pertenecerán
+                                                a este entrenador. Puedes buscarlos por
+                                                nombre o número y filtrar por generación
+                                                y tipo.
+                                            </p>
+                                        </div>
+
+                                        <div class="selector-contador">
+                                            <strong id="pokemon-contador">0</strong>
+                                            <span>seleccionados</span>
+                                        </div>
+
+                                    </div>
+
+                                    <div
+                                        class="selector-seleccionados"
+                                        id="pokemon-seleccionados"
+                                    ></div>
+
+                                    <details
+                                        class="selector-desplegable"
+                                        id="pokemon-desplegable"
+                                    >
+
+                                        <summary>
+                                            <span id="pokemon-texto-desplegable">
+                                                Abrir selector de Pokémon
+                                            </span>
+                                        </summary>
+
+                                        <div class="selector-desplegable-contenido">
+
+                                            <div class="selector-herramientas">
+
+                                                <div class="selector-busqueda">
+                                                    <input
+                                                        type="search"
+                                                        id="pokemon-busqueda"
+                                                        placeholder="Buscar por nombre o número..."
+                                                        autocomplete="off"
+                                                    >
+                                                </div>
+
+                                                <select
+                                                    id="pokemon-generacion"
+                                                    class="selector-filtro"
+                                                >
+                                                    <option value="">
+                                                        Todas las generaciones
+                                                    </option>
+                                                    <option value="1">
+                                                        Generación I · Kanto
+                                                    </option>
+                                                    <option value="2">
+                                                        Generación II · Johto
+                                                    </option>
+                                                    <option value="3">
+                                                        Generación III · Hoenn
+                                                    </option>
+                                                    <option value="4">
+                                                        Generación IV · Sinnoh
+                                                    </option>
+                                                    <option value="5">
+                                                        Generación V · Unova
+                                                    </option>
+                                                    <option value="6">
+                                                        Generación VI · Kalos
+                                                    </option>
+                                                    <option value="7">
+                                                        Generación VII · Alola
+                                                    </option>
+                                                    <option value="8">
+                                                        Generación VIII · Galar
+                                                    </option>
+                                                    <option value="9">
+                                                        Generación IX · Paldea
+                                                    </option>
+                                                </select>
+
+                                                <select
+                                                    id="pokemon-tipo"
+                                                    class="selector-filtro"
+                                                >
+                                                    <option value="">
+                                                        Todos los tipos
+                                                    </option>
+                                                </select>
+
+                                            </div>
+
+                                            <div class="selector-resumen">
+
+                                                <span id="pokemon-resultados">
+                                                    Pokémon disponibles
+                                                </span>
+
+                                                <button
+                                                    type="button"
+                                                    class="selector-boton"
+                                                    id="pokemon-limpiar-filtros"
+                                                >
+                                                    Restablecer filtros
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    class="selector-boton"
+                                                    id="pokemon-limpiar-seleccion"
+                                                >
+                                                    Quitar selección
+                                                </button>
+
+                                            </div>
+
+                                            <div
+                                                class="selector-grid"
+                                                id="pokemon-grid"
+                                            ></div>
+
+                                            <p class="selector-ayuda">
+                                                Pulsa una tarjeta para seleccionar
+                                                o quitar un Pokémon.
+                                            </p>
+
+                                        </div>
+
+                                    </details>
+
+                                    <div class="lista-original">
+                                        {{ campo }}
+                                    </div>
+
+                                </section>
+
+                            {% else %}
+
+                                {{ campo.label_tag }}
+                                {{ campo }}
+
+                            {% endif %}
+
+                            {% if campo.name == "imagen_archivo" and campo.value %}
+                                <div class="imagen-actual">
+                                    <img
+                                        src="{{ campo.value.url }}"
+                                        alt="Imagen registrada"
+                                    >
+                                    <span>
+                                        <strong>Imagen actual</strong><br>
+                                        Selecciona otro archivo si deseas reemplazarla.
+                                    </span>
+                                </div>
+                            {% endif %}
+
+                            {% if campo.name == "imagen" and campo.value %}
+                                <div class="imagen-actual">
+                                    <img
+                                        src="{{ campo.value }}"
+                                        alt="Imagen actual"
+                                        onerror="this.style.display='none'"
+                                    >
+                                    <span>
+                                        <strong>Enlace registrado</strong><br>
+                                        Puedes cambiar la dirección web de la imagen.
+                                    </span>
+                                </div>
+                            {% endif %}
+
+                            {% if campo.help_text and campo.name != "pokemones_equipo" %}
+                                <span class="ayuda-campo">
+                                    {{ campo.help_text }}
+                                </span>
+                            {% endif %}
+
+                            {% if campo.errors %}
+                                <div class="error-campo">
+                                    {{ campo.errors }}
+                                </div>
+                            {% endif %}
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+                <div class="formulario-acciones">
+
+                    <button
+                        type="submit"
+                        class="boton-formulario boton-guardar"
+                    >
+                        {{ accion|default:"Guardar registro" }}
+                    </button>
+
+                    <a
+                        href="{% url 'modulo_lista' modulo %}"
+                        class="boton-formulario boton-cancelar"
+                    >
+                        Cancelar
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </section>
+
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const selector = document.getElementById("selector-pokemon");
+
+    if (!selector) {
+        return;
+    }
+
+    const formulario = selector.closest("form");
+    const grid = document.getElementById("pokemon-grid");
+    const busqueda = document.getElementById("pokemon-busqueda");
+    const filtroGeneracion = document.getElementById("pokemon-generacion");
+    const filtroTipo = document.getElementById("pokemon-tipo");
+    const contador = document.getElementById("pokemon-contador");
+    const resultados = document.getElementById("pokemon-resultados");
+    const seleccionadosContenedor = document.getElementById("pokemon-seleccionados");
+    const desplegable = document.getElementById("pokemon-desplegable");
+    const textoDesplegable = document.getElementById("pokemon-texto-desplegable");
+
+    const botonLimpiarFiltros = document.getElementById(
+        "pokemon-limpiar-filtros"
+    );
+
+    const botonLimpiarSeleccion = document.getElementById(
+        "pokemon-limpiar-seleccion"
+    );
+
+    const casillas = Array.from(
+        formulario.querySelectorAll(
+            'input[name="pokemones_equipo"]'
+        )
+    );
+
+    if (!casillas.length) {
+        grid.innerHTML = `
+            <div class="selector-vacio">
+                Todavía no hay Pokémon disponibles para asignar.
+                Registra Pokémon en el módulo correspondiente y vuelve aquí.
+            </div>
+        `;
+
+        desplegable.addEventListener("toggle", function () {
+            textoDesplegable.textContent = desplegable.open
+                ? "Cerrar selector de Pokémon"
+                : "Abrir selector de Pokémon";
+        });
+
+        selector.classList.add("activo");
+        return;
+    }
+
+    const pokemon = casillas.map(function (input) {
+
+        const numero = Number(input.dataset.numero || 0);
+        const nombre = input.dataset.nombre || input.value;
+
+        const tipos = (input.dataset.tipos || "")
+            .split(",")
+            .map(tipo => tipo.trim())
+            .filter(Boolean);
+
+        let imagen = input.dataset.imagen || "";
+
+        if (!imagen && numero > 0) {
+            imagen =
+                `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${numero}.png`;
+        }
+
+        return {
+            input: input,
+            numero: numero,
+            nombre: nombre,
+            tipos: tipos,
+            generacion: input.dataset.generacion || "",
+            imagen: imagen,
+            tarjeta: null
+        };
+    });
+
+    // Crear las opciones de tipos disponibles.
+
+    const tiposDisponibles = [
+        ...new Set(
+            pokemon.flatMap(item => item.tipos)
+        )
+    ].sort((a, b) => a.localeCompare(b, "es"));
+
+    tiposDisponibles.forEach(function (tipo) {
+
+        const opcion = document.createElement("option");
+
+        opcion.value = tipo.toLowerCase();
+        opcion.textContent = tipo;
+
+        filtroTipo.appendChild(opcion);
+    });
+
+    // Crear una tarjeta por cada Pokémon.
+
+    function crearTarjeta(item) {
+
+        const tarjeta = document.createElement("label");
+        tarjeta.className = "tarjeta-pokemon";
+
+        const input = item.input;
+
+        const zonaImagen = document.createElement("div");
+        zonaImagen.className = "tarjeta-imagen";
+
+        const imagen = document.createElement("img");
+        imagen.src = item.imagen;
+        imagen.alt = item.nombre;
+        imagen.loading = "lazy";
+
+        imagen.addEventListener("error", function () {
+
+            if (this.dataset.intento !== "sprite") {
+
+                this.dataset.intento = "sprite";
+
+                this.src =
+                    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${item.numero}.png`;
+
+            } else {
+
+                this.style.display = "none";
+                zonaImagen.textContent = "Imagen no disponible";
+                zonaImagen.style.color = "#91a7c1";
+                zonaImagen.style.fontSize = "11px";
+            }
+        });
+
+        zonaImagen.appendChild(imagen);
+
+        const numeroTexto = document.createElement("span");
+        numeroTexto.className = "tarjeta-numero";
+        numeroTexto.textContent =
+            `N.º ${String(item.numero).padStart(4, "0")}`;
+
+        const nombreTexto = document.createElement("span");
+        nombreTexto.className = "tarjeta-nombre";
+        nombreTexto.textContent = item.nombre;
+
+        const tiposContenedor = document.createElement("div");
+        tiposContenedor.className = "tarjeta-tipos";
+
+        if (item.tipos.length) {
+
+            item.tipos.forEach(function (tipo) {
+
+                const etiqueta = document.createElement("span");
+                etiqueta.className = "etiqueta-tipo";
+                etiqueta.textContent = tipo;
+
+                tiposContenedor.appendChild(etiqueta);
+            });
+
+        } else {
+
+            const etiqueta = document.createElement("span");
+            etiqueta.className = "etiqueta-tipo";
+            etiqueta.textContent = "Sin tipo";
+
+            tiposContenedor.appendChild(etiqueta);
+        }
+
+        // Se conserva el checkbox original de Django.
+        const etiquetaOriginal = input.closest("label");
+
+        if (etiquetaOriginal) {
+            etiquetaOriginal.removeChild(input);
+        }
+
+        tarjeta.appendChild(input);
+        tarjeta.appendChild(zonaImagen);
+        tarjeta.appendChild(numeroTexto);
+        tarjeta.appendChild(nombreTexto);
+        tarjeta.appendChild(tiposContenedor);
+
+        item.tarjeta = tarjeta;
+
+        input.addEventListener("change", actualizarSeleccion);
+
+        actualizarEstadoTarjeta(item);
+
+        return tarjeta;
+    }
+
+    function actualizarEstadoTarjeta(item) {
+
+        if (!item.tarjeta) {
+            return;
+        }
+
+        item.tarjeta.classList.toggle(
+            "seleccionado",
+            item.input.checked
+        );
+
+        item.tarjeta.setAttribute(
+            "aria-checked",
+            item.input.checked ? "true" : "false"
+        );
+    }
+
+    // Actualizar el contador y el resumen de seleccionados.
+
+    function actualizarSeleccion() {
+
+        const seleccionados = pokemon.filter(
+            item => item.input.checked
+        );
+
+        contador.textContent = seleccionados.length;
+
+        seleccionadosContenedor.innerHTML = "";
+
+        seleccionados.forEach(function (item) {
+
+            const chip = document.createElement("span");
+            chip.className = "selector-chip";
+
+            const numero = document.createElement("span");
+            numero.className = "selector-chip-numero";
+            numero.textContent = `#${item.numero}`;
+
+            const nombre = document.createElement("span");
+            nombre.textContent = item.nombre;
+
+            chip.appendChild(numero);
+            chip.appendChild(nombre);
+
+            seleccionadosContenedor.appendChild(chip);
+        });
+
+        textoDesplegable.textContent = desplegable.open
+            ? "Cerrar selector de Pokémon"
+            : "Abrir selector de Pokémon";
+
+        pokemon.forEach(actualizarEstadoTarjeta);
+    }
+
+    // Buscar por nombre o número y aplicar filtros.
+
+    function aplicarFiltros() {
+
+        const texto = busqueda.value.trim().toLowerCase();
+        const generacion = filtroGeneracion.value;
+        const tipo = filtroTipo.value;
+
+        let visibles = 0;
+
+        pokemon.forEach(function (item) {
+
+            const nombre = item.nombre.toLowerCase();
+            const numero = String(item.numero);
+
+            const coincideBusqueda =
+                !texto ||
+                nombre.includes(texto) ||
+                numero.includes(texto) ||
+                `#${numero}`.includes(texto);
+
+            const coincideGeneracion =
+                !generacion ||
+                item.generacion === generacion;
+
+            const coincideTipo =
+                !tipo ||
+                item.tipos.some(
+                    elemento => elemento.toLowerCase() === tipo
+                );
+
+            const mostrar =
+                coincideBusqueda &&
+                coincideGeneracion &&
+                coincideTipo;
+
+            item.tarjeta.hidden = !mostrar;
+
+            if (mostrar) {
+                visibles++;
+            }
+        });
+
+        resultados.textContent =
+            `${visibles} Pokémon encontrados de ${pokemon.length} disponibles`;
+
+        const mensajeAnterior = grid.querySelector(".selector-vacio");
+
+        if (mensajeAnterior) {
+            mensajeAnterior.remove();
+        }
+
+        if (visibles === 0) {
+
+            const mensaje = document.createElement("div");
+            mensaje.className = "selector-vacio";
+
+            mensaje.textContent =
+                "No encontramos Pokémon con esos filtros. Prueba con otro nombre, número, generación o tipo.";
+
+            grid.appendChild(mensaje);
+        }
+    }
+
+    // Construir las tarjetas.
+
+    pokemon.forEach(function (item) {
+        grid.appendChild(crearTarjeta(item));
+    });
+
+    selector.classList.add("activo");
+
+    // Controlar el texto del desplegable.
+
+    desplegable.addEventListener("toggle", function () {
+
+        textoDesplegable.textContent = desplegable.open
+            ? "Cerrar selector de Pokémon"
+            : "Abrir selector de Pokémon";
+    });
+
+    // Eventos de búsqueda.
+
+    busqueda.addEventListener("input", aplicarFiltros);
+
+    filtroGeneracion.addEventListener(
+        "change",
+        aplicarFiltros
+    );
+
+    filtroTipo.addEventListener(
+        "change",
+        aplicarFiltros
+    );
+
+    // Restablecer filtros sin quitar selecciones.
+
+    botonLimpiarFiltros.addEventListener("click", function () {
+
+        busqueda.value = "";
+        filtroGeneracion.value = "";
+        filtroTipo.value = "";
+
+        aplicarFiltros();
+    });
+
+    // Quitar todas las selecciones.
+
+    botonLimpiarSeleccion.addEventListener("click", function () {
+
+        pokemon.forEach(function (item) {
+            item.input.checked = false;
+        });
+
+        actualizarSeleccion();
+    });
+
+    actualizarSeleccion();
+    aplicarFiltros();
+
+});
+</script>
+{% endblock %}

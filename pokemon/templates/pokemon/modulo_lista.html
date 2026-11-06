@@ -1,0 +1,894 @@
+{% extends "pokemon/base.html" %}
+
+{% block titulo %}{{ titulo }} | Pokédex{% endblock %}
+
+{% block estilos %}
+<style>
+/* =====================================================
+   LISTADO DE MÓDULOS - POKÉDEX
+===================================================== */
+
+.modulo {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    color: #edf4ff;
+    animation: moduloEntrada .45s ease both;
+}
+
+@keyframes moduloEntrada {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes imagenEntrada {
+    from { opacity: 0; transform: scale(.92); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.modulo-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding: 25px;
+    border: 1px solid #2b4565;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 90% 10%, #244c713d, transparent 35%),
+        linear-gradient(120deg, #172942, #101b2d 75%);
+    box-shadow: 0 12px 30px #0003;
+}
+
+.modulo-cabecera h1 {
+    margin: 0;
+    color: #f5f8ff;
+    font-size: clamp(25px, 3vw, 32px);
+    font-weight: 850;
+    letter-spacing: -.7px;
+}
+
+.modulo-descripcion {
+    margin: 9px 0 0;
+    color: #a9bad0;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.modulo-resumen {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 19px 22px;
+    border: 1px solid #304966;
+    border-radius: 15px;
+    background: linear-gradient(110deg, #1b304b, #142238);
+}
+
+.resumen-icono {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #d64b5b66;
+    border-radius: 13px;
+    background: #c9364920;
+    color: #ff8290;
+    font-size: 23px;
+    font-weight: 900;
+}
+
+.resumen-numero {
+    color: #fff;
+    font-size: 29px;
+    font-weight: 900;
+    line-height: 1.1;
+}
+
+.resumen-texto {
+    margin-top: 5px;
+    color: #a9bad0;
+    font-size: 13px;
+}
+
+.modulo-buscador {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 15px;
+    border: 1px solid #293f5b;
+    border-radius: 14px;
+    background: #111e30;
+}
+
+.modulo-buscador input {
+    min-width: 240px;
+    flex: 1;
+    padding: 13px 15px;
+    border: 1px solid #354d6b;
+    border-radius: 10px;
+    outline: none;
+    background: #0c1727;
+    color: #f4f7fc;
+    font: inherit;
+    font-size: 14px;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.modulo-buscador input::placeholder {
+    color: #7589a4;
+}
+
+.modulo-buscador input:focus {
+    border-color: #e34b5c;
+    box-shadow: 0 0 0 3px #e34b5c20;
+}
+
+.btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    min-height: 40px;
+    padding: 10px 15px;
+    border: 1px solid #3b526e;
+    border-radius: 9px;
+    background: #1b2d45;
+    color: #edf4ff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
+    transition: transform .2s, border-color .2s, background .2s;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    border-color: #e04b5b;
+    background: #263c59;
+}
+
+.btn-rojo {
+    border-color: #d33b4d;
+    background: linear-gradient(135deg, #df4657, #b9273b);
+    color: white;
+    box-shadow: 0 6px 16px #b9273b35;
+}
+
+.btn-rojo:hover {
+    border-color: #ff7885;
+    background: linear-gradient(135deg, #ef5969, #cb3045);
+}
+
+.btn-azul {
+    border-color: #386a98;
+    background: linear-gradient(135deg, #285b87, #1d4165);
+    color: white;
+}
+
+.btn-peligro {
+    border-color: #713746;
+    background: #401f2b;
+    color: #ffc0c8;
+}
+
+.registros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+    gap: 20px;
+}
+
+.registro-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #2b405b;
+    border-radius: 16px;
+    background: linear-gradient(160deg, #17263b, #101a2a);
+    box-shadow: 0 8px 22px #0002;
+    transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+    animation: moduloEntrada .5s ease both;
+}
+
+.registro-card:hover {
+    transform: translateY(-5px);
+    border-color: #b94a5a;
+    box-shadow: 0 17px 35px #0005, 0 0 0 1px #c9405020;
+}
+
+.registro-imagen {
+    position: relative;
+    height: 225px;
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at center, #365579 0%, #203751 48%, #15263c 100%);
+    border-bottom: 1px solid #30445f;
+}
+
+.registro-imagen::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 45px;
+    background: linear-gradient(transparent, #101a2a70);
+    pointer-events: none;
+}
+
+.registro-imagen img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    filter: drop-shadow(0 9px 10px #0005);
+    animation: imagenEntrada .45s ease both;
+    transition: transform .3s ease;
+}
+
+.registro-card:hover .registro-imagen img {
+    transform: scale(1.06);
+}
+
+.registro-sin-imagen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #9db2cc;
+    text-align: center;
+}
+
+.registro-sin-imagen strong {
+    width: 65px;
+    height: 65px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #7892b455;
+    border-radius: 50%;
+    background: #0e1c2e80;
+    color: #e5edf8;
+    font-size: 25px;
+    font-weight: 850;
+}
+
+.registro-sin-imagen small {
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 1px;
+}
+
+.registro-contenido {
+    padding: 19px;
+}
+
+.registro-etiqueta {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border: 1px solid #a83b4d70;
+    border-radius: 30px;
+    background: #a8324625;
+    color: #ffadb8;
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+}
+
+.registro-nombre {
+    margin: 12px 0 10px;
+    color: #f5f8ff;
+    font-size: 20px;
+    font-weight: 850;
+    line-height: 1.3;
+}
+
+.registro-detalle {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    color: #afbdd0;
+    font-size: 13px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.registro-detalle strong {
+    color: #e8eff9;
+    font-weight: 750;
+}
+
+.registro-acciones {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+}
+
+.registro-acciones .btn {
+    flex: 1;
+    min-width: 85px;
+}
+
+.registro-pie {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 18px;
+    border-top: 1px solid #2b4058;
+    background: #0e1928;
+    color: #8fa3bd;
+    font-size: 12px;
+}
+
+.registro-estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #8ed8b2;
+}
+
+.registro-estado::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #55c88b;
+    box-shadow: 0 0 8px #55c88b80;
+}
+
+.registro-tipo {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 6px 10px;
+    border: 1px solid #ffffff25;
+    border-radius: 30px;
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: capitalize;
+}
+
+.backup-miniaturas {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 7px;
+    margin-top: 14px;
+}
+
+.backup-miniatura {
+    height: 62px;
+    padding: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border: 1px solid #3b5270;
+    border-radius: 9px;
+    background: #20344e;
+}
+
+.backup-miniatura img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.sin-registros {
+    padding: 48px 22px;
+    border: 1px dashed #3c5675;
+    border-radius: 16px;
+    background: #111e30;
+    text-align: center;
+    color: #a9bad0;
+}
+
+.sin-registros h3 {
+    margin: 0 0 10px;
+    color: #f4f7fc;
+    font-size: 21px;
+}
+
+.sin-registros p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+    padding: 8px 0 15px;
+}
+
+.pagina-info {
+    padding: 0 10px;
+    color: #b1bfd1;
+    font-size: 13px;
+}
+
+@media (max-width: 650px) {
+    .modulo-cabecera {
+        padding: 20px;
+    }
+
+    .modulo-cabecera h1 {
+        font-size: 25px;
+    }
+
+    .modulo-cabecera > .btn {
+        width: 100%;
+    }
+
+    .modulo-buscador {
+        align-items: stretch;
+    }
+
+    .modulo-buscador input {
+        min-width: 100%;
+    }
+
+    .modulo-buscador .btn {
+        flex: 1;
+    }
+
+    .registros-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .registros-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .registro-imagen {
+        height: 235px;
+    }
+
+    .registro-acciones .btn {
+        min-width: 100%;
+    }
+
+    .pagina-info {
+        width: 100%;
+        text-align: center;
+        order: -1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modulo,
+    .registro-card,
+    .registro-imagen img {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block encabezado %}
+{{ titulo }}
+{% endblock %}
+
+{% block contenido %}
+<section class="modulo">
+
+    <header class="modulo-cabecera">
+        <div>
+            <h1>{{ titulo }}</h1>
+            <p class="modulo-descripcion">
+                Explora, consulta y administra los registros de tu mundo Pokémon.
+            </p>
+        </div>
+
+        {% if modulo != "backups" %}
+        <a class="btn btn-rojo" href="{% url 'modulo_crear' modulo=modulo %}">
+            + Crear registro
+        </a>
+        {% endif %}
+    </header>
+
+    <div class="modulo-resumen">
+        <div class="resumen-icono">#</div>
+        <div>
+            <div class="resumen-numero">{{ total }}</div>
+            <div class="resumen-texto">Registros encontrados</div>
+        </div>
+    </div>
+
+    <form method="get" class="modulo-buscador">
+        <input
+            type="search"
+            name="buscar"
+            value="{{ buscar }}"
+            placeholder="Buscar en {{ titulo|lower }}..."
+            aria-label="Buscar registros"
+        >
+
+        <button type="submit" class="btn btn-azul">Buscar</button>
+
+        {% if buscar %}
+        <a class="btn" href="{% url 'modulo_lista' modulo=modulo %}">
+            Limpiar búsqueda
+        </a>
+        {% endif %}
+    </form>
+
+    {% if pagina.object_list %}
+    <div class="registros-grid">
+
+        {% for registro in pagina %}
+        <article class="registro-card">
+
+            {% if modulo == "entrenadores" or modulo == "profesores" %}
+
+                <div class="registro-imagen">
+                    {% if registro.imagen_archivo %}
+                        <img
+                            src="{{ registro.imagen_archivo.url }}"
+                            alt="{{ registro.nombre }}"
+                            loading="lazy"
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                        >
+                        <div class="registro-sin-imagen" style="display:none;">
+                            <strong>{{ registro.nombre|first|upper }}</strong>
+                            <small>IMAGEN NO DISPONIBLE</small>
+                        </div>
+                    {% elif registro.imagen %}
+                        <img
+                            src="{{ registro.imagen }}"
+                            alt="{{ registro.nombre }}"
+                            loading="lazy"
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                        >
+                        <div class="registro-sin-imagen" style="display:none;">
+                            <strong>{{ registro.nombre|first|upper }}</strong>
+                            <small>IMAGEN NO DISPONIBLE</small>
+                        </div>
+                    {% elif registro.url_imagen %}
+                        <img
+                            src="{{ registro.url_imagen }}"
+                            alt="{{ registro.nombre }}"
+                            loading="lazy"
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                        >
+                        <div class="registro-sin-imagen" style="display:none;">
+                            <strong>{{ registro.nombre|first|upper }}</strong>
+                            <small>IMAGEN NO DISPONIBLE</small>
+                        </div>
+                    {% else %}
+                        <div class="registro-sin-imagen">
+                            <strong>{{ registro.nombre|first|upper }}</strong>
+                            <small>FOTOGRAFÍA NO REGISTRADA</small>
+                        </div>
+                    {% endif %}
+                </div>
+
+            {% elif modulo == "gimnasios" %}
+
+                <div class="registro-imagen">
+                    {% if registro.imagen_archivo %}
+                        <img
+                            src="{{ registro.imagen_archivo.url }}"
+                            alt="{{ registro.ciudad }}"
+                            loading="lazy"
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                        >
+                        <div class="registro-sin-imagen" style="display:none;">
+                            <strong>GYM</strong>
+                            <small>IMAGEN NO DISPONIBLE</small>
+                        </div>
+                    {% else %}
+                        <div class="registro-sin-imagen">
+                            <strong>GYM</strong>
+                            <small>GIMNASIO POKÉMON</small>
+                        </div>
+                    {% endif %}
+                </div>
+
+            {% elif modulo == "regiones" %}
+
+                <div class="registro-imagen">
+                    {% if registro.imagen_archivo %}
+                        <img
+                            src="{{ registro.imagen_archivo.url }}"
+                            alt="{{ registro.nombre }}"
+                            loading="lazy"
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                        >
+                        <div class="registro-sin-imagen" style="display:none;">
+                            <strong>REG</strong>
+                            <small>IMAGEN NO DISPONIBLE</small>
+                        </div>
+                    {% elif registro.imagen %}
+                        <img
+                            src="{{ registro.imagen }}"
+                            alt="{{ registro.nombre }}"
+                            loading="lazy"
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                        >
+                        <div class="registro-sin-imagen" style="display:none;">
+                            <strong>REG</strong>
+                            <small>IMAGEN NO DISPONIBLE</small>
+                        </div>
+                    {% else %}
+                        <div class="registro-sin-imagen">
+                            <strong>REG</strong>
+                            <small>REGIÓN POKÉMON</small>
+                        </div>
+                    {% endif %}
+                </div>
+
+            {% elif modulo == "backups" %}
+
+                <div class="registro-imagen">
+                    <div class="registro-sin-imagen">
+                        <strong>PC</strong>
+                        <small>CAJA DE ALMACENAMIENTO</small>
+                    </div>
+                </div>
+
+            {% elif modulo == "tipos" %}
+
+                <div class="registro-imagen">
+                    <div class="registro-sin-imagen">
+                        <strong style="color:{{ registro.color }};">●</strong>
+                        <small>TIPO ELEMENTAL</small>
+                    </div>
+                </div>
+
+            {% else %}
+
+                <div class="registro-imagen">
+                    <div class="registro-sin-imagen">
+                        <strong>H</strong>
+                        <small>HABILIDAD POKÉMON</small>
+                    </div>
+                </div>
+
+            {% endif %}
+
+            <div class="registro-contenido">
+
+                {% if modulo == "entrenadores" %}
+
+                    <span class="registro-etiqueta">Entrenador Pokémon</span>
+                    <h3 class="registro-nombre">
+                        {{ registro.nombre }} {{ registro.apellido }}
+                    </h3>
+
+                    <div class="registro-detalle">
+                        <div><strong>Documento:</strong> {{ registro.documento }}</div>
+                        <div><strong>Pueblo:</strong> {{ registro.pueblo }}</div>
+                        <div><strong>Liga:</strong> {{ registro.get_liga_display }}</div>
+                        <div><strong>Profesor:</strong> {{ registro.profesor|default:"Sin asignar" }}</div>
+                        <div><strong>Medallas:</strong> {{ registro.cantidad_medallas }}</div>
+                        <div><strong>Pokémon:</strong> {{ registro.cantidad_pokemones }}</div>
+                    </div>
+
+                {% elif modulo == "profesores" %}
+
+                    <span class="registro-etiqueta">Profesor Pokémon</span>
+                    <h3 class="registro-nombre">
+                        {{ registro.nombre }} {{ registro.apellido }}
+                    </h3>
+
+                    <div class="registro-detalle">
+                        <div><strong>Especialidad:</strong> {{ registro.especialidad }}</div>
+                        <div><strong>Pueblo:</strong> {{ registro.pueblo }}</div>
+                        <div><strong>Entrenadores:</strong> {{ registro.entrenadores.count }}</div>
+                    </div>
+
+                {% elif modulo == "gimnasios" %}
+
+                    <span class="registro-etiqueta">Gimnasio Pokémon</span>
+                    <h3 class="registro-nombre">{{ registro.ciudad }}</h3>
+
+                    <div class="registro-detalle">
+                        <div><strong>Líder:</strong> {{ registro.lider }}</div>
+                        <div><strong>Medalla:</strong> {{ registro.medalla }}</div>
+                        <div><strong>Elemento:</strong> {{ registro.tipo.nombre }}</div>
+                        <div><strong>Región:</strong> {{ registro.region.nombre }}</div>
+                        <span
+                            class="registro-tipo"
+                            style="background:{{ registro.tipo.color|default:'#40536d' }};"
+                        >
+                            {{ registro.tipo.nombre }}
+                        </span>
+                    </div>
+
+                {% elif modulo == "regiones" %}
+
+                    <span class="registro-etiqueta">Región Pokémon</span>
+                    <h3 class="registro-nombre">{{ registro.nombre }}</h3>
+
+                    <div class="registro-detalle">
+                        {{ registro.descripcion|default:"Sin descripción registrada."|truncatechars:140 }}
+                        <div><strong>Gimnasios:</strong> {{ registro.gimnasios.count }}</div>
+                    </div>
+
+                {% elif modulo == "backups" %}
+
+                    <span class="registro-etiqueta">Almacenamiento PC</span>
+                    <h3 class="registro-nombre">{{ registro.nombre }}</h3>
+
+                    <div class="registro-detalle">
+                        <div>
+                            <strong>Entrenador:</strong>
+                            {{ registro.entrenador.nombre }} {{ registro.entrenador.apellido }}
+                        </div>
+                        <div>
+                            <strong>Profesor:</strong>
+                            {{ registro.profesor.nombre }} {{ registro.profesor.apellido }}
+                        </div>
+                        <div><strong>Pokémon guardados:</strong> {{ registro.pokemones.count }}</div>
+                        <div><strong>Creada:</strong> {{ registro.fecha_creacion|date:"d/m/Y" }}</div>
+                    </div>
+
+                    {% if registro.pokemones.all %}
+                    <div class="backup-miniaturas">
+                        {% for pokemon in registro.pokemones.all|slice:":8" %}
+                        <div class="backup-miniatura">
+                            {% if pokemon.imagen_archivo %}
+                                <img
+                                    src="{{ pokemon.imagen_archivo.url }}"
+                                    alt="{{ pokemon.nombre }}"
+                                    loading="lazy"
+                                >
+                            {% elif pokemon.imagen_oficial %}
+                                <img
+                                    src="{{ pokemon.imagen_oficial }}"
+                                    alt="{{ pokemon.nombre }}"
+                                    loading="lazy"
+                                >
+                            {% elif pokemon.imagen %}
+                                <img
+                                    src="{{ pokemon.imagen }}"
+                                    alt="{{ pokemon.nombre }}"
+                                    loading="lazy"
+                                >
+                            {% else %}
+                                <img
+                                    src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{{ pokemon.numero }}.png"
+                                    alt="{{ pokemon.nombre }}"
+                                    loading="lazy"
+                                >
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                {% elif modulo == "tipos" %}
+
+                    <span class="registro-etiqueta">Elemento Pokémon</span>
+                    <h3 class="registro-nombre">{{ registro.nombre }}</h3>
+
+                    <div class="registro-detalle">
+                        <div><strong>Color:</strong> {{ registro.color }}</div>
+                        <div>
+                            <strong>Pokémon relacionados:</strong>
+                            {{ registro.pokemones.count }}
+                        </div>
+                        <span
+                            class="registro-tipo"
+                            style="background:{{ registro.color|default:'#40536d' }};"
+                        >
+                            {{ registro.nombre }}
+                        </span>
+                    </div>
+
+                {% else %}
+
+                    <span class="registro-etiqueta">Habilidad Pokémon</span>
+                    <h3 class="registro-nombre">{{ registro.nombre }}</h3>
+
+                    <div class="registro-detalle">
+                        {{ registro.descripcion|default:"Sin descripción registrada."|truncatechars:140 }}
+                        <div>
+                            <strong>Pokémon relacionados:</strong>
+                            {{ registro.pokemones.count }}
+                        </div>
+                    </div>
+
+                {% endif %}
+
+                <div class="registro-acciones">
+
+                    {% if modulo == "entrenadores" %}
+                        <a
+                            class="btn btn-azul"
+                            href="{% url 'pc_entrenador' entrenador_id=registro.pk %}"
+                        >
+                            Abrir PC
+                        </a>
+                    {% endif %}
+
+                    {% if modulo == "backups" %}
+                        <a
+                            class="btn btn-azul"
+                            href="{% url 'pc_caja' caja_id=registro.pk %}"
+                        >
+                            Abrir caja
+                        </a>
+                    {% endif %}
+
+                    {% if modulo != "backups" %}
+                        <a
+                            class="btn"
+                            href="{% url 'modulo_editar' modulo=modulo pk=registro.pk %}"
+                        >
+                            Editar
+                        </a>
+
+                        <a
+                            class="btn btn-peligro"
+                            href="{% url 'modulo_eliminar' modulo=modulo pk=registro.pk %}"
+                        >
+                            Eliminar
+                        </a>
+                    {% endif %}
+
+                </div>
+            </div>
+
+            <footer class="registro-pie">
+                <span>Registro #{{ registro.pk }}</span>
+                <span class="registro-estado">Disponible</span>
+            </footer>
+
+        </article>
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+    <div class="sin-registros">
+        <h3>No se encontraron registros</h3>
+        <p>
+            {% if buscar %}
+                No hay resultados para esa búsqueda. Prueba con otro nombre.
+            {% else %}
+                Todavía no hay registros en este módulo. Puedes crear el primero.
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+
+    {% if pagina.has_other_pages %}
+    <nav class="paginacion">
+
+        {% if pagina.has_previous %}
+            <a class="btn" href="?pagina=1&amp;buscar={{ buscar|urlencode }}">Primera</a>
+            <a class="btn" href="?pagina={{ pagina.previous_page_number }}&amp;buscar={{ buscar|urlencode }}">Anterior</a>
+        {% endif %}
+
+        <span class="pagina-info">
+            Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}
+        </span>
+
+        {% if pagina.has_next %}
+            <a class="btn" href="?pagina={{ pagina.next_page_number }}&amp;buscar={{ buscar|urlencode }}">Siguiente</a>
+            <a class="btn" href="?pagina={{ pagina.paginator.num_pages }}&amp;buscar={{ buscar|urlencode }}">Última</a>
+        {% endif %}
+
+    </nav>
+    {% endif %}
+
+</section>
+{% endblock %}

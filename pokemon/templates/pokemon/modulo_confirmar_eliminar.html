@@ -1,0 +1,50 @@
+{% extends "pokemon/base.html" %}
+
+{% block titulo %}Eliminar registro | Pokédex{% endblock %}
+
+{% block encabezado %}
+<div>
+    <span class="etiqueta-superior">CONFIRMACIÓN</span>
+    <h1>Eliminar registro</h1>
+    <p>Revisa la información antes de confirmar.</p>
+</div>
+{% endblock %}
+
+{% block estilos %}
+<style>
+.confirmacion-panel{max-width:650px;padding:30px;background:#14243a;border:1px solid #71313c;border-radius:16px}
+.confirmacion-panel h2{color:#fff}
+.confirmacion-panel p{color:#b8c7dc;line-height:1.7}
+.confirmacion-acciones{display:flex;gap:12px;margin-top:25px;flex-wrap:wrap}
+.boton-eliminar,.boton-cancelar{padding:12px 18px;border-radius:9px;text-decoration:none;font-weight:700;border:0;cursor:pointer}
+.boton-eliminar{background:#b83d4e;color:#fff}
+.boton-cancelar{background:#243b58;color:#dceaff}
+.etiqueta-superior{font-size:11px;color:#ff8b98;font-weight:800;letter-spacing:2px}
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="confirmacion-panel">
+    <h2>¿Deseas eliminar este registro?</h2>
+
+    <p>
+        Estás a punto de eliminar:
+        <strong>{{ registro }}</strong>
+    </p>
+
+    <p>Esta acción puede afectar información relacionada con este registro y no se puede deshacer desde esta pantalla.</p>
+
+    <div class="confirmacion-acciones">
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="boton-eliminar">
+                Sí, eliminar
+            </button>
+        </form>
+
+        <a href="{% url 'modulo_lista' modulo %}" class="boton-cancelar">
+            Cancelar
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1389 @@
+{% extends "pokemon/base.html" %}
+
+{% block titulo %}PC Pokémon | {{ entrenador.nombre }}{% endblock %}
+{% block encabezado %}PC Pokémon · {{ entrenador.nombre }} {{ entrenador.apellido }}{% endblock %}
+
+{% block estilos %}
+<style>
+.pc-pagina {
+    --fondo: #0b1526;
+    --panel: #14243b;
+    --panel2: #1b304d;
+    --borde: #344e70;
+    --texto: #f2f6ff;
+    --suave: #a9bdd7;
+    --azul: #65aaff;
+    --rojo: #e34c60;
+
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: 100%;
+    max-width: 1500px;
+    margin: auto;
+    color: var(--texto);
+    font-size: 15px;
+    animation: pcEntrada .5s ease both;
+}
+
+.pc-pagina *,
+.pc-pagina *::before,
+.pc-pagina *::after {
+    box-sizing: border-box;
+}
+
+/* NAVEGACIÓN */
+
+.pc-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    width: fit-content;
+    padding: 12px 17px;
+    border: 1px solid #405d80;
+    border-radius: 11px;
+    color: #d9e9ff !important;
+    background: #172a43;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none !important;
+    transition: .25s;
+}
+
+.pc-volver:hover {
+    transform: translateX(-4px);
+    border-color: #80b8fa;
+    background: #203c5e;
+}
+
+.pc-volver-icono {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border-radius: 8px;
+    color: white;
+    background: #294c73;
+    font-size: 19px;
+}
+
+/* PERFIL */
+
+.pc-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(240px, 340px) minmax(0, 1fr);
+    gap: 30px;
+    padding: 28px;
+    overflow: hidden;
+    border: 1px solid #3e638d;
+    border-radius: 22px;
+    background:
+        radial-gradient(ellipse at 12% 50%, rgba(64,145,239,.28), transparent 55%),
+        radial-gradient(circle at 100% 0%, rgba(221,67,91,.12), transparent 35%),
+        linear-gradient(125deg, #203b5c, #101d30 80%);
+    box-shadow: 0 18px 45px rgba(0,0,0,.25);
+}
+
+.pc-hero::after {
+    content: "";
+    position: absolute;
+    top: -170px;
+    right: -110px;
+    width: 400px;
+    height: 400px;
+    border: 1px solid rgba(155,196,255,.15);
+    border-radius: 50%;
+    box-shadow: 0 0 0 45px rgba(155,196,255,.035),
+                0 0 0 90px rgba(155,196,255,.025);
+    pointer-events: none;
+}
+
+.pc-retrato {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    min-height: 350px;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid #5279a5;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle, rgba(91,161,245,.35), transparent 68%),
+        #142943;
+}
+
+.pc-retrato img {
+    width: 100%;
+    height: 350px;
+    padding: 10px;
+    object-fit: contain;
+    filter: drop-shadow(0 15px 17px rgba(0,0,0,.45));
+    animation: pcFlotar 4s ease-in-out infinite;
+}
+
+.pc-inicial {
+    color: #c2ddff;
+    font-size: 90px;
+    font-weight: 900;
+}
+
+.pc-info {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+    min-width: 0;
+}
+
+.pc-tag {
+    display: inline-flex;
+    width: fit-content;
+    padding: 9px 14px;
+    border: 1px solid #527caf;
+    border-radius: 30px;
+    color: #cce2ff;
+    background: rgba(38,91,151,.28);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+}
+
+.pc-info h1 {
+    margin: 0;
+    color: white !important;
+    font-size: clamp(30px, 4vw, 47px);
+    font-weight: 900;
+    line-height: 1.12;
+    overflow-wrap: anywhere;
+}
+
+.pc-info > p {
+    margin: 0;
+    color: #b8cce5;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.pc-info > p strong {
+    color: white;
+}
+
+.pc-datos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 7px;
+}
+
+.pc-dato {
+    min-width: 0;
+    min-height: 85px;
+    padding: 14px;
+    border: 1px solid #3c5879;
+    border-radius: 12px;
+    background: rgba(9,23,41,.75);
+    transition: .25s;
+}
+
+.pc-dato:hover {
+    transform: translateY(-3px);
+    border-color: #83baff;
+}
+
+.pc-dato small {
+    display: block;
+    margin-bottom: 8px;
+    color: #a9bfdc;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+}
+
+.pc-dato strong {
+    display: block;
+    color: white;
+    font-size: 17px;
+    overflow-wrap: anywhere;
+}
+
+/* SECCIONES */
+
+.pc-seccion {
+    width: 100%;
+    min-width: 0;
+    padding: 25px;
+    border: 1px solid var(--borde);
+    border-radius: 18px;
+    background: linear-gradient(145deg, #192d48, #111f33);
+    box-shadow: 0 10px 28px rgba(0,0,0,.15);
+}
+
+.pc-encabezado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.pc-seccion h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    color: #f3f7ff !important;
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.pc-icono {
+    display: grid;
+    width: 43px;
+    height: 43px;
+    flex-shrink: 0;
+    place-items: center;
+    border: 1px solid #4a719c;
+    border-radius: 12px;
+    color: #d4e8ff;
+    background: #244366;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.pc-ayuda {
+    margin: 12px 0 22px;
+    color: var(--suave);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.pc-contador {
+    color: #a9c9ee;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* PROFESOR */
+
+.pc-profesor {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 18px;
+    border: 1px solid #405d80;
+    border-radius: 15px;
+    background: #1b314d;
+    transition: .25s;
+}
+
+.pc-profesor:hover {
+    transform: translateY(-3px);
+    border-color: #7eafe7;
+}
+
+.pc-profesor img {
+    width: 110px;
+    height: 120px;
+    flex-shrink: 0;
+    object-fit: contain;
+    border: 1px solid #4b6b90;
+    border-radius: 12px;
+    background: #243e5c;
+}
+
+.pc-profesor strong {
+    color: white;
+    font-size: 18px;
+}
+
+.pc-profesor p {
+    margin: 8px 0 0;
+    color: #b4c7df;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* POKÉMON */
+
+.pc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+    gap: 18px;
+}
+
+.pc-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #3a5575;
+    border-radius: 16px;
+    background: #192e49;
+    transition: .3s;
+}
+
+.pc-card:hover {
+    transform: translateY(-5px);
+    border-color: #83b6f2;
+    box-shadow: 0 15px 30px rgba(0,0,0,.27);
+}
+
+.pc-card-imagen {
+    position: relative;
+    display: grid;
+    height: 205px;
+    place-items: center;
+    overflow: hidden;
+    border-bottom: 1px solid #3a5371;
+    background:
+        radial-gradient(circle, rgba(91,153,226,.3), transparent 68%),
+        #142943;
+}
+
+.pc-card-imagen img {
+    width: 100%;
+    height: 100%;
+    padding: 12px;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 9px rgba(0,0,0,.35));
+    transition: transform .3s;
+}
+
+.pc-card:hover .pc-card-imagen img {
+    transform: scale(1.08);
+}
+
+.pc-card-cuerpo {
+    padding: 17px;
+}
+
+.pc-numero {
+    color: #a9c1dd;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .6px;
+}
+
+.pc-card h3 {
+    margin: 8px 0 12px;
+    color: #f3f7ff !important;
+    font-size: 20px;
+    font-weight: 900;
+    text-transform: capitalize;
+}
+
+.pc-tipos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin: 12px 0;
+}
+
+.pc-tipo {
+    display: inline-block;
+    padding: 7px 10px;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 20px;
+    color: white;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pc-estadisticas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.pc-stat {
+    padding: 10px;
+    border: 1px solid #354e6d;
+    border-radius: 9px;
+    background: #122137;
+}
+
+.pc-stat span {
+    display: block;
+    color: #a9bdd5;
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.pc-stat strong {
+    display: block;
+    margin-top: 5px;
+    color: #f2f6ff;
+    font-size: 17px;
+}
+
+/* CAJAS */
+
+.pc-cajas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
+    gap: 20px;
+}
+
+.pc-caja {
+    position: relative;
+    min-width: 0;
+    padding: 18px;
+    overflow: hidden;
+    border: 1px solid #405d7e;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(75,146,228,.18), transparent 40%),
+        linear-gradient(145deg, #203954, #14253c);
+    transition: .3s;
+}
+
+.pc-caja:hover {
+    transform: translateY(-5px);
+    border-color: #83b8f4;
+    box-shadow: 0 15px 30px rgba(0,0,0,.26);
+}
+
+.pc-caja-superior {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #405a78;
+}
+
+.pc-caja-icono {
+    display: grid;
+    width: 49px;
+    height: 49px;
+    flex-shrink: 0;
+    place-items: center;
+    border: 1px solid #5984b1;
+    border-radius: 13px;
+    color: #e2efff;
+    background: linear-gradient(145deg, #315b85, #203c5c);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.pc-caja-superior h3 {
+    margin: 0;
+    color: white !important;
+    font-size: 19px;
+    overflow-wrap: anywhere;
+}
+
+.pc-caja-superior span {
+    display: block;
+    margin-top: 5px;
+    color: #a9c5e4;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+/* FOTO DEL ENTRENADOR EN CADA CAJA */
+
+.pc-caja-entrenador {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 115px;
+    margin: 16px 0;
+    padding: 12px;
+    border: 1px solid #496b91;
+    border-radius: 13px;
+    background: rgba(9,24,42,.72);
+}
+
+.pc-caja-entrenador img {
+    display: block;
+    width: 85px;
+    height: 90px;
+    flex-shrink: 0;
+    object-fit: contain;
+    border: 1px solid #52759c;
+    border-radius: 10px;
+    background:
+        radial-gradient(circle, rgba(89,152,225,.25), transparent 70%),
+        #203a58;
+}
+
+.pc-caja-entrenador strong {
+    display: block;
+    color: #f5f8ff;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.pc-caja-entrenador span {
+    display: block;
+    margin-top: 6px;
+    color: #a9c1dc;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.pc-entrenador-inicial {
+    display: grid;
+    width: 85px;
+    height: 90px;
+    flex-shrink: 0;
+    place-items: center;
+    border: 1px solid #52759c;
+    border-radius: 10px;
+    color: #c6e0ff;
+    background: #203a58;
+    font-size: 35px;
+    font-weight: 900;
+}
+
+/* DATOS DE CADA CAJA */
+
+.pc-caja-datos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    margin: 14px 0;
+}
+
+.pc-caja-dato {
+    padding: 11px;
+    border: 1px solid #3c5878;
+    border-radius: 10px;
+    background: rgba(10,26,45,.7);
+}
+
+.pc-caja-dato small {
+    display: block;
+    color: #a8bdd6;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pc-caja-dato strong {
+    display: block;
+    margin-top: 6px;
+    color: white;
+    font-size: 15px;
+}
+
+.pc-caja-profesor {
+    margin: 12px 0;
+    padding: 11px;
+    border-left: 3px solid #6ba7e9;
+    border-radius: 0 8px 8px 0;
+    color: #b7cbe3;
+    background: rgba(8,22,39,.5);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.pc-caja-profesor strong {
+    color: white;
+}
+
+/* MINIATURAS */
+
+.pc-miniaturas-titulo {
+    margin: 17px 0 10px;
+    color: #d2e3f8;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+}
+
+.pc-miniaturas {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    min-height: 78px;
+    margin: 12px 0 17px;
+}
+
+.pc-miniatura {
+    position: relative;
+    display: grid;
+    min-width: 0;
+    height: 78px;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid #466283;
+    border-radius: 10px;
+    background:
+        radial-gradient(circle, rgba(98,157,222,.2), transparent 70%),
+        #203954;
+    transition: .2s;
+}
+
+.pc-miniatura:hover {
+    transform: scale(1.06);
+    border-color: #a0caff;
+}
+
+.pc-miniatura img {
+    width: 100%;
+    height: 100%;
+    padding: 4px;
+    object-fit: contain;
+}
+
+.pc-miniatura-numero {
+    position: absolute;
+    right: 4px;
+    bottom: 3px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    color: white;
+    background: rgba(8,19,34,.85);
+    font-size: 9px;
+    font-weight: 900;
+}
+
+.pc-caja-vacia {
+    grid-column: 1 / -1;
+    display: grid;
+    min-height: 78px;
+    place-items: center;
+    border: 1px dashed #587493;
+    border-radius: 10px;
+    color: #b1c4dc;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* BOTONES */
+
+.pc-boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 11px 16px;
+    border: 1px solid #e25769;
+    border-radius: 10px;
+    color: white !important;
+    background: linear-gradient(120deg, #bd3448, #e14d5c) !important;
+    font-size: 12px;
+    font-weight: 900;
+    text-align: center;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.pc-boton:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(120deg, #d94256, #f06470) !important;
+}
+
+.pc-boton-secundario {
+    width: 100%;
+    margin-top: 12px;
+    border-color: #4774a2;
+    background: linear-gradient(120deg, #25496e, #326494) !important;
+}
+
+.pc-boton-secundario:hover {
+    background: linear-gradient(120deg, #326494, #407bb5) !important;
+}
+
+/* FORMULARIO */
+
+.pc-formulario {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 15px;
+}
+
+.pc-campo {
+    min-width: 0;
+}
+
+.pc-campo label {
+    display: block;
+    margin-bottom: 9px;
+    color: #c5d5e9;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.pc-campo input,
+.pc-campo select {
+    width: 100%;
+    min-height: 49px;
+    padding: 11px 14px;
+    border: 1px solid #405d7e;
+    border-radius: 9px;
+    outline: none;
+    color: white !important;
+    background: #101d30 !important;
+    font-size: 13px;
+}
+
+.pc-campo input:focus,
+.pc-campo select:focus {
+    border-color: #78b1f3;
+    box-shadow: 0 0 0 3px rgba(92,157,239,.15);
+}
+
+.pc-campo select option {
+    color: white;
+    background: #14243a;
+}
+
+/* MEDALLAS */
+
+.pc-medallas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 13px;
+}
+
+.pc-medalla {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 15px;
+    border: 1px solid #405d7e;
+    border-radius: 12px;
+    background: #1b304a;
+    transition: .25s;
+}
+
+.pc-medalla:hover {
+    transform: translateY(-3px);
+    border-color: #83b8f5;
+}
+
+.pc-medalla-icono {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    place-items: center;
+    border: 1px solid #9d7b42;
+    border-radius: 50%;
+    color: #ffe5a1;
+    background: linear-gradient(145deg, #916e31, #58431f);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.pc-medalla strong {
+    display: block;
+    color: #eaf2ff;
+    font-size: 13px;
+}
+
+.pc-medalla span {
+    display: block;
+    margin-top: 5px;
+    color: #afc1d8;
+    font-size: 11px;
+}
+
+/* VACÍOS Y ENLACES */
+
+.pc-vacio {
+    padding: 26px 20px;
+    border: 1px dashed #526e8e;
+    border-radius: 13px;
+    color: #b6c8df;
+    background: rgba(23,42,66,.5);
+    font-size: 13px;
+    line-height: 1.8;
+    text-align: center;
+}
+
+.pc-vacio strong {
+    display: block;
+    margin-bottom: 7px;
+    color: #e5efff;
+    font-size: 16px;
+}
+
+.pc-enlaces {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.pc-enlaces a {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 13px 18px;
+    border: 1px solid #496e97;
+    border-radius: 10px;
+    color: #e1edff !important;
+    background: #1e3d60;
+    font-size: 12px;
+    font-weight: 900;
+    text-decoration: none !important;
+    transition: .25s;
+}
+
+.pc-enlaces a:hover {
+    transform: translateY(-3px);
+    background: #2a5684;
+}
+
+@keyframes pcEntrada {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pcFlotar {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1000px) {
+    .pc-hero {
+        grid-template-columns: 250px minmax(0, 1fr);
+        gap: 22px;
+    }
+
+    .pc-datos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pc-retrato,
+    .pc-retrato img {
+        min-height: 290px;
+        height: 290px;
+    }
+
+    .pc-formulario {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .pc-formulario button {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 650px) {
+    .pc-hero {
+        grid-template-columns: 1fr;
+        padding: 17px;
+    }
+
+    .pc-retrato,
+    .pc-retrato img {
+        min-height: 250px;
+        height: 250px;
+    }
+
+    .pc-info h1 {
+        font-size: 31px;
+    }
+
+    .pc-seccion {
+        padding: 17px;
+    }
+
+    .pc-encabezado {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pc-profesor {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pc-grid,
+    .pc-cajas {
+        grid-template-columns: 1fr;
+    }
+
+    .pc-formulario {
+        grid-template-columns: 1fr;
+    }
+
+    .pc-formulario button {
+        grid-column: auto;
+    }
+
+    .pc-caja {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 390px) {
+    .pc-datos {
+        grid-template-columns: 1fr;
+    }
+
+    .pc-miniaturas {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pc-pagina,
+    .pc-retrato img {
+        animation: none !important;
+    }
+
+    .pc-pagina * {
+        transition-duration: .01ms !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block contenido %}
+<section class="pc-pagina">
+
+    <a class="pc-volver" href="{% url 'modulo_lista' modulo='entrenadores' %}">
+        <span class="pc-volver-icono">←</span>
+        Volver al directorio de entrenadores
+    </a>
+
+    <!-- PERFIL DEL ENTRENADOR -->
+
+    <header class="pc-hero">
+
+        <div class="pc-retrato">
+            {% if entrenador.url_imagen %}
+                <img
+                    src="{{ entrenador.url_imagen }}"
+                    alt="Fotografía de {{ entrenador.nombre }} {{ entrenador.apellido }}"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                >
+                <span class="pc-inicial" style="display:none;">
+                    {{ entrenador.nombre|first|upper }}
+                </span>
+            {% else %}
+                <span class="pc-inicial">
+                    {{ entrenador.nombre|first|upper }}
+                </span>
+            {% endif %}
+        </div>
+
+        <div class="pc-info">
+            <span class="pc-tag">CENTRO DE ALMACENAMIENTO POKÉMON</span>
+
+            <h1>{{ entrenador.nombre }} {{ entrenador.apellido }}</h1>
+
+            <p>
+                Pueblo de origen:
+                <strong>{{ entrenador.pueblo|default:"No registrado" }}</strong>
+            </p>
+
+            <div class="pc-datos">
+                <div class="pc-dato">
+                    <small>Documento</small>
+                    <strong>{{ entrenador.documento }}</strong>
+                </div>
+
+                <div class="pc-dato">
+                    <small>Región / Liga</small>
+                    <strong>{{ entrenador.get_liga_display|default:"No registrada" }}</strong>
+                </div>
+
+                <div class="pc-dato">
+                    <small>Medallas</small>
+                    <strong>{{ entrenador.cantidad_medallas }}</strong>
+                </div>
+
+                <div class="pc-dato">
+                    <small>Equipo Pokémon</small>
+                    <strong>{{ pokemones_equipo|length }}</strong>
+                </div>
+
+                <div class="pc-dato">
+                    <small>Almacenados</small>
+                    <strong>{{ total_en_pc }}</strong>
+                </div>
+
+                <div class="pc-dato">
+                    <small>Cajas del PC</small>
+                    <strong>{{ cajas|length }}</strong>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- PROFESOR RESPONSABLE -->
+
+    <section class="pc-seccion">
+        <div class="pc-encabezado">
+            <h2><span class="pc-icono">PR</span> Profesor responsable</h2>
+        </div>
+
+        <p class="pc-ayuda">
+            Información del profesor que acompaña y orienta al entrenador.
+        </p>
+
+        {% if entrenador.profesor %}
+            <div class="pc-profesor">
+                {% if entrenador.profesor.imagen_archivo %}
+                    <img
+                        src="{{ entrenador.profesor.imagen_archivo.url }}"
+                        alt="Profesor {{ entrenador.profesor.nombre }}"
+                        loading="lazy"
+                        onerror="this.style.display='none';"
+                    >
+                {% else %}
+                    <div class="pc-icono" style="width:100px;height:110px;">
+                        {{ entrenador.profesor.nombre|first|upper }}
+                    </div>
+                {% endif %}
+
+                <div>
+                    <strong>
+                        {{ entrenador.profesor.nombre }}
+                        {{ entrenador.profesor.apellido }}
+                    </strong>
+
+                    <p>
+                        <strong>Especialidad:</strong>
+                        {{ entrenador.profesor.especialidad|default:"No registrada" }}
+                    </p>
+
+                    <p>
+                        <strong>Pueblo:</strong>
+                        {{ entrenador.profesor.pueblo|default:"No registrado" }}
+                    </p>
+                </div>
+            </div>
+        {% else %}
+            <div class="pc-vacio">
+                No hay un profesor asociado a este entrenador.
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- EQUIPO POKÉMON -->
+
+    <section class="pc-seccion">
+        <div class="pc-encabezado">
+            <h2><span class="pc-icono">PK</span> Equipo Pokémon</h2>
+            <span class="pc-contador">
+                {{ pokemones_equipo|length }} Pokémon registrados
+            </span>
+        </div>
+
+        <p class="pc-ayuda">
+            Pokémon que acompañan al entrenador, con sus elementos y estadísticas de combate.
+        </p>
+
+        {% if pokemones_equipo %}
+            <div class="pc-grid">
+                {% for pokemon in pokemones_equipo %}
+                    <article class="pc-card">
+                        <div class="pc-card-imagen">
+                            {% if pokemon.url_imagen %}
+                                <img
+                                    src="{{ pokemon.url_imagen }}"
+                                    alt="{{ pokemon.nombre }}"
+                                    loading="lazy"
+                                    onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{{ pokemon.numero }}.png';"
+                                >
+                            {% else %}
+                                <img
+                                    src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{{ pokemon.numero }}.png"
+                                    alt="{{ pokemon.nombre }}"
+                                    loading="lazy"
+                                    onerror="this.style.display='none';"
+                                >
+                            {% endif %}
+                        </div>
+
+                        <div class="pc-card-cuerpo">
+                            <span class="pc-numero">
+                                POKÉDEX N.º {{ pokemon.numero|stringformat:"03d" }}
+                            </span>
+
+                            <h3>{{ pokemon.nombre }}</h3>
+
+                            <div class="pc-tipos">
+                                {% for tipo in pokemon.tipos.all %}
+                                    <span
+                                        class="pc-tipo"
+                                        style="background-color:{{ tipo.color|default:'#40536d' }};"
+                                    >
+                                        {{ tipo.nombre }}
+                                    </span>
+                                {% empty %}
+                                    <span class="pc-numero">Sin tipos registrados</span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="pc-estadisticas">
+                                <div class="pc-stat">
+                                    <span>Salud · HP</span>
+                                    <strong>{{ pokemon.hp }}</strong>
+                                </div>
+                                <div class="pc-stat">
+                                    <span>Ataque</span>
+                                    <strong>{{ pokemon.ataque }}</strong>
+                                </div>
+                                <div class="pc-stat">
+                                    <span>Defensa</span>
+                                    <strong>{{ pokemon.defensa }}</strong>
+                                </div>
+                                <div class="pc-stat">
+                                    <span>Ataque especial</span>
+                                    <strong>{{ pokemon.ataque_especial }}</strong>
+                                </div>
+                                <div class="pc-stat">
+                                    <span>Defensa especial</span>
+                                    <strong>{{ pokemon.defensa_especial }}</strong>
+                                </div>
+                                <div class="pc-stat">
+                                    <span>Velocidad</span>
+                                    <strong>{{ pokemon.velocidad }}</strong>
+                                </div>
+                            </div>
+
+                            <a
+                                class="pc-boton pc-boton-secundario"
+                                href="{% url 'detalle' numero=pokemon.numero %}"
+                            >
+                                Consultar Pokémon
+                            </a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="pc-vacio">
+                <strong>El equipo todavía está vacío</strong>
+                No hay Pokémon asignados actualmente a este entrenador.
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- CAJAS DEL PC -->
+
+    <section class="pc-seccion">
+        <div class="pc-encabezado">
+            <h2><span class="pc-icono">PC</span> Almacenamiento Pokémon</h2>
+            <span class="pc-contador">
+                {{ cajas|length }} cajas registradas
+            </span>
+        </div>
+
+        <p class="pc-ayuda">
+            Organiza los Pokémon que no están en el equipo principal. Cada caja incluye
+            una fotografía del entrenador responsable, sus datos y una vista previa de los Pokémon.
+        </p>
+
+        {% if cajas %}
+            <div class="pc-cajas">
+                {% for caja in cajas %}
+                    <article class="pc-caja">
+
+                        <div class="pc-caja-superior">
+                            <div class="pc-caja-icono">PC</div>
+                            <div>
+                                <h3>{{ caja.nombre }}</h3>
+                                <span>ALMACENAMIENTO POKÉMON</span>
+                            </div>
+                        </div>
+
+                        <!-- FOTOGRAFÍA DEL ENTRENADOR EN CADA CAJA -->
+
+                        <div class="pc-caja-entrenador">
+                            {% if entrenador.url_imagen %}
+                                <img
+                                    src="{{ entrenador.url_imagen }}"
+                                    alt="Entrenador {{ entrenador.nombre }} {{ entrenador.apellido }}"
+                                    loading="lazy"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
+                                >
+                                <div class="pc-entrenador-inicial" style="display:none;">
+                                    {{ entrenador.nombre|first|upper }}
+                                </div>
+                            {% else %}
+                                <div class="pc-entrenador-inicial">
+                                    {{ entrenador.nombre|first|upper }}
+                                </div>
+                            {% endif %}
+
+                            <div>
+                                <strong>
+                                    {{ entrenador.nombre }} {{ entrenador.apellido }}
+                                </strong>
+                                <span>Entrenador responsable de esta caja</span>
+                            </div>
+                        </div>
+
+                        <div class="pc-caja-datos">
+                            <div class="pc-caja-dato">
+                                <small>Pokémon guardados</small>
+                                <strong>{{ caja.cantidad_pokemones }}</strong>
+                            </div>
+
+                            <div class="pc-caja-dato">
+                                <small>Fecha de creación</small>
+                                <strong>{{ caja.fecha_creacion|date:"d/m/Y" }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="pc-caja-profesor">
+                            <strong>Profesor responsable:</strong>
+                            {% if caja.profesor %}
+                                {{ caja.profesor.nombre }} {{ caja.profesor.apellido }}
+                            {% else %}
+                                No asignado
+                            {% endif %}
+                        </div>
+
+                        <div class="pc-miniaturas-titulo">
+                            Pokémon almacenados
+                        </div>
+
+                        <div class="pc-miniaturas">
+                            {% for pokemon in caja.pokemones.all|slice:":12" %}
+                                <a
+                                    class="pc-miniatura"
+                                    href="{% url 'detalle' numero=pokemon.numero %}"
+                                    title="{{ pokemon.nombre }}"
+                                >
+                                    {% if pokemon.url_imagen %}
+                                        <img
+                                            src="{{ pokemon.url_imagen }}"
+                                            alt="{{ pokemon.nombre }}"
+                                            loading="lazy"
+                                            onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{{ pokemon.numero }}.png';"
+                                        >
+                                    {% else %}
+                                        <img
+                                            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{{ pokemon.numero }}.png"
+                                            alt="{{ pokemon.nombre }}"
+                                            loading="lazy"
+                                            onerror="this.style.display='none';"
+                                        >
+                                    {% endif %}
+                                    <span class="pc-miniatura-numero">
+                                        #{{ pokemon.numero }}
+                                    </span>
+                                </a>
+                            {% empty %}
+                                <div class="pc-caja-vacia">
+                                    Esta caja todavía no tiene Pokémon.
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <a
+                            class="pc-boton pc-boton-secundario"
+                            href="{% url 'pc_caja' caja_id=caja.pk %}"
+                        >
+                            Abrir caja y administrar Pokémon
+                        </a>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="pc-vacio">
+                <strong>No hay cajas de almacenamiento</strong>
+                Puedes crear una nueva caja para organizar los Pokémon.
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- CREAR CAJA -->
+
+    <section class="pc-seccion">
+        <div class="pc-encabezado">
+            <h2><span class="pc-icono">+</span> Crear una nueva caja</h2>
+        </div>
+
+        <p class="pc-ayuda">
+            Registra un espacio de almacenamiento y selecciona el profesor responsable.
+        </p>
+
+        <form
+            method="post"
+            action="{% url 'pc_crear_caja' entrenador_id=entrenador.pk %}"
+            class="pc-formulario"
+        >
+            {% csrf_token %}
+
+            <div class="pc-campo">
+                <label for="nombre">Nombre de la caja</label>
+                <input
+                    id="nombre"
+                    type="text"
+                    name="nombre"
+                    maxlength="150"
+                    placeholder="Ej. Pokémon de reserva"
+                    required
+                >
+            </div>
+
+            <div class="pc-campo">
+                <label for="profesor">Profesor responsable</label>
+                <select id="profesor" name="profesor" required>
+                    <option value="">Selecciona un profesor</option>
+                    {% for profesor in profesores %}
+                        <option
+                            value="{{ profesor.id }}"
+                            {% if entrenador.profesor_id == profesor.id %}selected{% endif %}
+                        >
+                            {{ profesor.nombre }} {{ profesor.apellido }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button class="pc-boton" type="submit">
+                Crear caja
+            </button>
+        </form>
+    </section>
+
+    <!-- MEDALLAS -->
+
+    <section class="pc-seccion">
+        <div class="pc-encabezado">
+            <h2><span class="pc-icono">MD</span> Medallas de gimnasio</h2>
+            <span class="pc-contador">{{ medallas|length }} gimnasios</span>
+        </div>
+
+        <p class="pc-ayuda">
+            Gimnasios relacionados con este entrenador y sus medallas obtenidas.
+        </p>
+
+        {% if medallas %}
+            <div class="pc-medallas">
+                {% for gimnasio in medallas %}
+                    <article class="pc-medalla">
+                        <div class="pc-medalla-icono">MD</div>
+                        <div>
+                            <strong>{{ gimnasio.medalla }}</strong>
+                            <span>{{ gimnasio.ciudad }}</span>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="pc-vacio">
+                Todavía no hay gimnasios asociados a este entrenador.
+            </div>
+        {% endif %}
+    </section>
+
+    <div class="pc-enlaces">
+        <a href="{% url 'modulo_lista' modulo='entrenadores' %}">
+            ← Volver al directorio de entrenadores
+        </a>
+    </div>
+
+</section>
+{% endblock %}

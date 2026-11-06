@@ -1,0 +1,1277 @@
+
+{% extends "pokemon/base.html" %}
+
+{% block titulo %}{{ pokemon.nombre }} | Pokédex{% endblock %}
+{% block encabezado %}Ficha Pokémon{% endblock %}
+
+{% block estilos %}
+<style>
+/* =====================================================
+   DETALLE POKÉMON - DISEÑO GENERAL
+===================================================== */
+
+.detalle-pagina {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    color: #eaf2ff;
+    animation: entradaDetalle .45s ease both;
+}
+
+.detalle-pagina *,
+.detalle-pagina *::before,
+.detalle-pagina *::after {
+    box-sizing: border-box;
+}
+
+@keyframes entradaDetalle {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.detalle-superior,
+.detalle-migas,
+.detalle-acciones,
+.seccion-encabezado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.detalle-migas {
+    justify-content: flex-start;
+    color: #8295b5;
+    font-size: 13px;
+}
+
+.detalle-migas a {
+    color: #9fc6ff;
+    text-decoration: none;
+}
+
+.detalle-migas a:hover {
+    color: white;
+}
+
+.detalle-boton {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border: 1px solid rgba(130,170,230,.2);
+    border-radius: 10px;
+    background: #14233d;
+    color: #dceaff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 750;
+    transition: .2s ease;
+}
+
+.detalle-boton:hover {
+    transform: translateY(-2px);
+    border-color: #5795ed;
+    background: #203b63;
+}
+
+.detalle-boton-principal {
+    border-color: #3984ff;
+    background: #2468d8;
+    color: white;
+}
+
+.detalle-boton-principal:hover {
+    background: #347be9;
+}
+
+/* =====================================================
+   PORTADA
+===================================================== */
+
+.pokemon-portada {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0,1.1fr) minmax(260px,.9fr);
+    align-items: center;
+    gap: 25px;
+    min-height: 360px;
+    overflow: hidden;
+    padding: 35px;
+    border: 1px solid rgba(116,158,221,.2);
+    border-radius: 22px;
+    background:
+        radial-gradient(circle at 80% 20%,rgba(52,113,202,.2),transparent 35%),
+        linear-gradient(135deg,#172b49,#0c172a 75%);
+    box-shadow: 0 18px 45px rgba(0,0,0,.2);
+}
+
+.pokemon-portada::before {
+    content: "";
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    right: 8%;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 1px solid rgba(132,178,244,.1);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 35px rgba(132,178,244,.025),
+        0 0 0 70px rgba(132,178,244,.018);
+    pointer-events: none;
+}
+
+.pokemon-informacion,
+.pokemon-imagen-contenedor {
+    position: relative;
+    z-index: 1;
+}
+
+.pokemon-numero {
+    display: inline-flex;
+    margin-bottom: 14px;
+    padding: 8px 12px;
+    border: 1px solid rgba(120,169,238,.22);
+    border-radius: 8px;
+    background: rgba(61,116,190,.14);
+    color: #9bc4ff;
+    font-size: 13px;
+    font-weight: 850;
+    letter-spacing: 1px;
+}
+
+.pokemon-nombre {
+    margin: 0;
+    color: white;
+    font-size: clamp(36px,5vw,58px);
+    line-height: 1.05;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    text-transform: capitalize;
+}
+
+.pokemon-subtitulo {
+    max-width: 470px;
+    margin: 13px 0 22px;
+    color: #9aacc9;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.pokemon-tipos,
+.pokemon-etiquetas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.tipo-etiqueta {
+    display: inline-flex;
+    padding: 8px 15px;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 30px;
+    color: white;
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+}
+
+.pokemon-etiquetas {
+    margin-top: 19px;
+}
+
+.etiqueta-extra {
+    padding: 7px 11px;
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 8px;
+    background: rgba(255,255,255,.07);
+    color: #c5d5ed;
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.pokemon-imagen-contenedor {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+}
+
+.pokemon-imagen {
+    display: block;
+    width: 100%;
+    max-width: 340px;
+    height: 300px;
+    object-fit: contain;
+    filter: drop-shadow(0 18px 18px rgba(0,0,0,.4));
+    animation: flotarPokemon 4s ease-in-out infinite;
+}
+
+@keyframes flotarPokemon {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-9px); }
+}
+
+.imagen-no-disponible {
+    display: none;
+    width: 100%;
+    max-width: 280px;
+    padding: 30px;
+    border: 1px dashed rgba(151,181,225,.3);
+    border-radius: 16px;
+    color: #91a5c5;
+    text-align: center;
+    font-size: 13px;
+}
+
+/* =====================================================
+   SECCIONES
+===================================================== */
+
+.detalle-seccion {
+    display: flex;
+    flex-direction: column;
+    gap: 17px;
+}
+
+.seccion-titulo {
+    margin: 0;
+    color: #f1f6ff;
+    font-size: 21px;
+    font-weight: 850;
+    letter-spacing: -.4px;
+}
+
+.seccion-descripcion {
+    margin: 6px 0 0;
+    color: #8296b7;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.seccion-contador {
+    padding: 7px 12px;
+    border: 1px solid rgba(102,153,225,.18);
+    border-radius: 20px;
+    background: rgba(46,103,181,.12);
+    color: #a8cbff;
+    font-size: 12px;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+/* =====================================================
+   INFORMACIÓN GENERAL
+===================================================== */
+
+.informacion-grid {
+    display: grid;
+    grid-template-columns: repeat(4,minmax(0,1fr));
+    gap: 14px;
+}
+
+.informacion-card {
+    padding: 20px;
+    border: 1px solid rgba(116,158,221,.16);
+    border-radius: 15px;
+    background: linear-gradient(145deg,#14233b,#101c30);
+    transition: .2s ease;
+}
+
+.informacion-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(93,153,242,.42);
+}
+
+.informacion-label {
+    display: block;
+    margin-bottom: 10px;
+    color: #8498b9;
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+}
+
+.informacion-valor {
+    color: #f0f5ff;
+    font-size: 22px;
+    font-weight: 850;
+}
+
+.informacion-unidad {
+    margin-left: 4px;
+    color: #8ca6cc;
+    font-size: 12px;
+}
+
+/* =====================================================
+   ESTADÍSTICAS
+===================================================== */
+
+.estadisticas-panel {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(210px,.5fr);
+    gap: 22px;
+    padding: 24px;
+    border: 1px solid rgba(116,158,221,.16);
+    border-radius: 17px;
+    background: #111e32;
+}
+
+.estadisticas-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.estadistica-fila {
+    display: grid;
+    grid-template-columns: 145px minmax(0,1fr) 40px;
+    align-items: center;
+    gap: 13px;
+}
+
+.estadistica-nombre {
+    color: #c4d2e8;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.estadistica-barra {
+    height: 9px;
+    overflow: hidden;
+    border-radius: 20px;
+    background: #253650;
+}
+
+.estadistica-progreso {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg,#3479df,#65b6ff);
+    transition: width .7s ease;
+}
+
+.estadistica-valor {
+    color: white;
+    font-size: 13px;
+    font-weight: 850;
+    text-align: right;
+}
+
+.estadisticas-total {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+    border: 1px solid rgba(94,155,243,.2);
+    border-radius: 14px;
+    background: rgba(41,101,180,.1);
+    text-align: center;
+}
+
+.estadisticas-total strong {
+    color: white;
+    font-size: 45px;
+}
+
+.estadisticas-total span {
+    margin-top: 8px;
+    color: #8fa8cb;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+}
+
+/* =====================================================
+   HABILIDADES
+===================================================== */
+
+.habilidades-grid {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 15px;
+}
+
+.habilidad-card {
+    padding: 21px;
+    border: 1px solid rgba(116,158,221,.17);
+    border-radius: 15px;
+    background: linear-gradient(145deg,#152640,#101c30);
+    transition: .2s ease;
+}
+
+.habilidad-card:hover {
+    border-color: rgba(91,151,234,.4);
+    transform: translateY(-2px);
+}
+
+.habilidad-superior {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.habilidad-nombre {
+    margin: 0;
+    color: #e9f2ff;
+    font-size: 17px;
+    font-weight: 850;
+}
+
+.habilidad-tipo {
+    padding: 5px 9px;
+    border-radius: 7px;
+    background: rgba(68,132,218,.15);
+    color: #a9ceff;
+    font-size: 10px;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.habilidad-descripcion {
+    margin: 0;
+    color: #9aacc7;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* =====================================================
+   EVOLUCIONES
+===================================================== */
+
+.evoluciones-contenedor {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(155px,1fr));
+    gap: 15px;
+}
+
+.evolucion-card {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 17px 13px;
+    border: 1px solid rgba(116,158,221,.17);
+    border-radius: 16px;
+    background: linear-gradient(145deg,#172945,#101b2e);
+    text-decoration: none;
+    transition: .22s ease;
+}
+
+a.evolucion-card:hover {
+    transform: translateY(-5px);
+    border-color: #5795ed;
+    background: #1a3151;
+}
+
+.evolucion-imagen-contenedor {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 115px;
+}
+
+.evolucion-imagen {
+    width: 115px;
+    height: 110px;
+    object-fit: contain;
+    filter: drop-shadow(0 7px 8px rgba(0,0,0,.25));
+}
+
+.evolucion-numero {
+    color: #7895bd;
+    font-size: 11px;
+    font-weight: 850;
+}
+
+.evolucion-nombre {
+    color: #ecf4ff;
+    font-size: 14px;
+    font-weight: 850;
+    text-align: center;
+    text-transform: capitalize;
+}
+
+.evolucion-actual {
+    border-color: rgba(82,153,255,.6);
+    background: linear-gradient(145deg,#1b3d69,#132846);
+}
+
+.evolucion-actual .evolucion-nombre {
+    color: #a9d0ff;
+}
+
+.evolucion-actual::after {
+    content: "POKÉMON ACTUAL";
+    margin-top: 4px;
+    color: #83b8ff;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .8px;
+}
+
+.evolucion-etapa {
+    display: block;
+    margin-bottom: 2px;
+    color: #829bc0;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+}
+
+/* =====================================================
+   MENSAJES VACÍOS
+===================================================== */
+
+.detalle-vacio,
+.entrenador-no-asignado {
+    padding: 25px;
+    border: 1px dashed rgba(132,166,215,.23);
+    border-radius: 14px;
+    background: rgba(20,36,59,.5);
+    color: #91a5c5;
+    font-size: 13px;
+    line-height: 1.7;
+    text-align: center;
+}
+
+/* =====================================================
+   ENTRENADOR
+===================================================== */
+
+.entrenador-card {
+    display: grid;
+    grid-template-columns: 155px minmax(0,1fr);
+    gap: 24px;
+    align-items: center;
+    padding: 25px;
+    border: 1px solid rgba(108,166,245,.25);
+    border-radius: 19px;
+    background:
+        radial-gradient(circle at 0% 0%,rgba(56,119,207,.16),transparent 40%),
+        linear-gradient(135deg,#172b49,#101c30);
+}
+
+.entrenador-imagen-contenedor {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 145px;
+    height: 145px;
+    overflow: hidden;
+    border: 1px solid rgba(133,180,244,.28);
+    border-radius: 17px;
+    background: rgba(61,112,181,.13);
+}
+
+.entrenador-imagen {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.entrenador-iniciales {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: #a9ceff;
+    font-size: 42px;
+    font-weight: 900;
+}
+
+.entrenador-contenido {
+    min-width: 0;
+}
+
+.entrenador-etiqueta {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: #83b8ff;
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.entrenador-nombre {
+    margin: 0 0 7px;
+    color: white;
+    font-size: 25px;
+    font-weight: 900;
+}
+
+.entrenador-pueblo {
+    margin: 0 0 17px;
+    color: #9aafce;
+    font-size: 13px;
+}
+
+.entrenador-datos {
+    display: grid;
+    grid-template-columns: repeat(4,minmax(0,1fr));
+    gap: 10px;
+}
+
+.entrenador-dato {
+    padding: 12px;
+    border: 1px solid rgba(132,171,224,.13);
+    border-radius: 10px;
+    background: rgba(6,16,31,.23);
+}
+
+.entrenador-dato span {
+    display: block;
+    margin-bottom: 6px;
+    color: #8298ba;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.entrenador-dato strong {
+    display: block;
+    overflow-wrap: anywhere;
+    color: #e9f2ff;
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.entrenador-enlace {
+    display: inline-flex;
+    margin-top: 16px;
+    color: #8dbdff;
+    font-size: 12px;
+    font-weight: 850;
+    text-decoration: none;
+}
+
+.entrenador-enlace:hover {
+    color: white;
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 950px) {
+    .informacion-grid {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+    }
+
+    .entrenador-datos {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .pokemon-portada {
+        grid-template-columns: 1fr;
+        padding: 25px;
+    }
+
+    .pokemon-imagen-contenedor {
+        min-height: 220px;
+    }
+
+    .pokemon-imagen {
+        height: 235px;
+    }
+
+    .estadisticas-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .habilidades-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .entrenador-card {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+    }
+
+    .entrenador-contenido {
+        width: 100%;
+    }
+
+    .entrenador-enlace {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .informacion-grid {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+    }
+
+    .informacion-card {
+        padding: 14px;
+    }
+
+    .informacion-valor {
+        font-size: 18px;
+    }
+
+    .estadistica-fila {
+        grid-template-columns: 95px minmax(0,1fr) 32px;
+        gap: 8px;
+    }
+
+    .estadistica-nombre {
+        font-size: 11px;
+    }
+
+    .entrenador-datos {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+    }
+
+    .detalle-acciones {
+        width: 100%;
+    }
+
+    .detalle-boton {
+        flex: 1;
+    }
+
+    .evoluciones-contenedor {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+    }
+}
+</style>
+{% endblock %}
+
+
+{% block contenido %}
+<div class="detalle-pagina">
+
+    <!-- NAVEGACIÓN -->
+    <div class="detalle-superior">
+        <div class="detalle-migas">
+            <a href="{% url 'inicio' %}">Pokédex</a>
+            <span>/</span>
+            <span>{{ pokemon.nombre }}</span>
+        </div>
+
+        <div class="detalle-acciones">
+            <a href="{% url 'inicio' %}" class="detalle-boton">
+                Volver a la Pokédex
+            </a>
+
+            <a href="{% url 'pokemon_editar' pokemon.numero %}"
+               class="detalle-boton detalle-boton-principal">
+                Editar Pokémon
+            </a>
+        </div>
+    </div>
+
+
+    <!-- PORTADA -->
+    <section class="pokemon-portada">
+
+        <div class="pokemon-informacion">
+            <span class="pokemon-numero">
+                N.º {{ pokemon.numero|stringformat:"03d" }}
+            </span>
+
+            <h1 class="pokemon-nombre">{{ pokemon.nombre }}</h1>
+
+            <p class="pokemon-subtitulo">
+                Consulta sus características, estadísticas, habilidades
+                y todas las etapas de su línea evolutiva.
+            </p>
+
+            <div class="pokemon-tipos">
+                {% for tipo in pokemon.tipos.all %}
+                    <span class="tipo-etiqueta"
+                          style="background-color: {{ tipo.color|default:'#456b9d' }};">
+                        {{ tipo.nombre }}
+                    </span>
+                {% empty %}
+                    <span class="etiqueta-extra">Sin tipos registrados</span>
+                {% endfor %}
+            </div>
+
+            <div class="pokemon-etiquetas">
+                {% if pokemon.es_legendario %}
+                    <span class="etiqueta-extra">Pokémon legendario</span>
+                {% endif %}
+
+                {% if entrenador %}
+                    <span class="etiqueta-extra">Entrenador asignado</span>
+                {% else %}
+                    <span class="etiqueta-extra">Sin entrenador asignado</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="pokemon-imagen-contenedor">
+            {% if pokemon.url_imagen or imagen_api or imagen_alternativa_api %}
+                <img
+                    class="pokemon-imagen imagen-con-alternativa"
+                    src="{% if pokemon.url_imagen %}{{ pokemon.url_imagen }}{% elif imagen_api %}{{ imagen_api }}{% else %}{{ imagen_alternativa_api }}{% endif %}"
+                    data-alternativas="{% if imagen_api %}{{ imagen_api }}|{% endif %}{% if imagen_alternativa_api %}{{ imagen_alternativa_api }}{% endif %}"
+                    alt="{{ pokemon.nombre }}"
+                >
+            {% endif %}
+
+            <div class="imagen-no-disponible">
+                No hay una imagen disponible para este Pokémon.
+            </div>
+        </div>
+    </section>
+
+
+    <!-- INFORMACIÓN GENERAL -->
+    <section class="detalle-seccion">
+        <div class="seccion-encabezado">
+            <div>
+                <h2 class="seccion-titulo">Información general</h2>
+                <p class="seccion-descripcion">
+                    Datos físicos y características principales.
+                </p>
+            </div>
+        </div>
+
+        <div class="informacion-grid">
+            <article class="informacion-card">
+                <span class="informacion-label">Número nacional</span>
+                <strong class="informacion-valor">
+                    #{{ pokemon.numero|stringformat:"03d" }}
+                </strong>
+            </article>
+
+            <article class="informacion-card">
+                <span class="informacion-label">Altura</span>
+                <strong class="informacion-valor">
+                    {% if altura_metros != None %}
+                        {{ altura_metros }}<span class="informacion-unidad">m</span>
+                    {% else %}—{% endif %}
+                </strong>
+            </article>
+
+            <article class="informacion-card">
+                <span class="informacion-label">Peso</span>
+                <strong class="informacion-valor">
+                    {% if peso_kg != None %}
+                        {{ peso_kg }}<span class="informacion-unidad">kg</span>
+                    {% else %}—{% endif %}
+                </strong>
+            </article>
+
+            <article class="informacion-card">
+                <span class="informacion-label">Experiencia base</span>
+                <strong class="informacion-valor">
+                    {{ pokemon.experiencia_base|default:"—" }}
+                </strong>
+            </article>
+        </div>
+    </section>
+
+
+    <!-- ESTADÍSTICAS -->
+    <section class="detalle-seccion">
+        <div class="seccion-encabezado">
+            <div>
+                <h2 class="seccion-titulo">Estadísticas de combate</h2>
+                <p class="seccion-descripcion">
+                    Distribución de las estadísticas principales.
+                </p>
+            </div>
+        </div>
+
+        <div class="estadisticas-panel">
+            <div class="estadisticas-lista">
+                {% for estadistica in estadisticas %}
+                    <div class="estadistica-fila">
+                        <span class="estadistica-nombre">
+                            {{ estadistica.nombre }}
+                        </span>
+
+                        <div class="estadistica-barra">
+                            <span class="estadistica-progreso"
+                                  style="width: {{ estadistica.porcentaje }}%;">
+                            </span>
+                        </div>
+
+                        <strong class="estadistica-valor">
+                            {{ estadistica.valor|default:0 }}
+                        </strong>
+                    </div>
+                {% empty %}
+                    <div class="detalle-vacio">
+                        No hay estadísticas registradas.
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="estadisticas-total">
+                <strong>{{ pokemon.total_estadisticas|default:"0" }}</strong>
+                <span>Total de estadísticas</span>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- HABILIDADES -->
+    <section class="detalle-seccion">
+        <div class="seccion-encabezado">
+            <div>
+                <h2 class="seccion-titulo">Habilidades</h2>
+                <p class="seccion-descripcion">
+                    Habilidades obtenidas desde PokéAPI y presentadas en español.
+                </p>
+            </div>
+
+            <span class="seccion-contador">
+                {{ habilidades_api|length }} registradas
+            </span>
+        </div>
+
+        {% if habilidades_api %}
+            <div class="habilidades-grid">
+                {% for habilidad in habilidades_api %}
+                    <article class="habilidad-card">
+                        <div class="habilidad-superior">
+                            <h3 class="habilidad-nombre">
+                                {{ habilidad.nombre }}
+                            </h3>
+
+                            <span class="habilidad-tipo">
+                                {% if habilidad.oculta %}Oculta{% else %}Normal{% endif %}
+                            </span>
+                        </div>
+
+                        <p class="habilidad-descripcion">
+                            {{ habilidad.descripcion|default:"Descripción no disponible." }}
+                        </p>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="detalle-vacio">
+                No fue posible consultar las habilidades.
+                Comprueba tu conexión a internet o inténtalo nuevamente.
+            </div>
+        {% endif %}
+    </section>
+
+
+    <!-- EVOLUCIONES ANTERIORES -->
+    <section class="detalle-seccion">
+        <div class="seccion-encabezado">
+            <div>
+                <h2 class="seccion-titulo">Evoluciones anteriores</h2>
+                <p class="seccion-descripcion">
+                    Todas las etapas anteriores de esta línea evolutiva.
+                </p>
+            </div>
+
+            <span class="seccion-contador">
+                {{ evoluciones_anteriores_api|length }} anteriores
+            </span>
+        </div>
+
+        {% if evoluciones_anteriores_api %}
+            <div class="evoluciones-contenedor">
+                {% for evolucion in evoluciones_anteriores_api %}
+                    <a href="{% url 'detalle' evolucion.numero %}"
+                       class="evolucion-card">
+
+                        <span class="evolucion-etapa">Etapa anterior</span>
+
+                        <div class="evolucion-imagen-contenedor">
+                            {% if evolucion.imagen or evolucion.imagen_alternativa %}
+                                <img
+                                    src="{% if evolucion.imagen %}{{ evolucion.imagen }}{% else %}{{ evolucion.imagen_alternativa }}{% endif %}"
+                                    data-alternativas="{{ evolucion.imagen_alternativa }}"
+                                    class="evolucion-imagen imagen-con-alternativa"
+                                    alt="{{ evolucion.nombre }}"
+                                    loading="lazy"
+                                >
+                            {% endif %}
+                        </div>
+
+                        <span class="evolucion-numero">
+                            N.º {{ evolucion.numero|stringformat:"03d" }}
+                        </span>
+
+                        <strong class="evolucion-nombre">
+                            {{ evolucion.nombre }}
+                        </strong>
+                    </a>
+                {% endfor %}
+
+                <div class="evolucion-card evolucion-actual">
+                    <div class="evolucion-imagen-contenedor">
+                        {% if pokemon.url_imagen or imagen_api or imagen_alternativa_api %}
+                            <img
+                                src="{% if pokemon.url_imagen %}{{ pokemon.url_imagen }}{% elif imagen_api %}{{ imagen_api }}{% else %}{{ imagen_alternativa_api }}{% endif %}"
+                                data-alternativas="{% if imagen_api %}{{ imagen_api }}|{% endif %}{{ imagen_alternativa_api }}"
+                                class="evolucion-imagen imagen-con-alternativa"
+                                alt="{{ pokemon.nombre }}"
+                                loading="lazy"
+                            >
+                        {% endif %}
+                    </div>
+
+                    <span class="evolucion-numero">
+                        N.º {{ pokemon.numero|stringformat:"03d" }}
+                    </span>
+
+                    <strong class="evolucion-nombre">
+                        {{ pokemon.nombre }}
+                    </strong>
+                </div>
+            </div>
+        {% else %}
+            <div class="detalle-vacio">
+                {% if evoluciones_siguientes_api %}
+                    Este Pokémon no tiene etapas anteriores y puede ser
+                    el inicio de una línea evolutiva.
+                {% else %}
+                    No se encontraron etapas anteriores para este Pokémon.
+                    Puede tratarse de una especie que no evoluciona.
+                {% endif %}
+            </div>
+        {% endif %}
+    </section>
+
+
+    <!-- EVOLUCIONES SIGUIENTES -->
+    <section class="detalle-seccion">
+        <div class="seccion-encabezado">
+            <div>
+                <h2 class="seccion-titulo">Evoluciones siguientes</h2>
+                <p class="seccion-descripcion">
+                    Todas las especies en las que puede evolucionar,
+                    incluyendo las diferentes ramas evolutivas.
+                </p>
+            </div>
+
+            <span class="seccion-contador">
+                {{ evoluciones_siguientes_api|length }} siguientes
+            </span>
+        </div>
+
+        {% if evoluciones_siguientes_api %}
+            <div class="evoluciones-contenedor">
+                {% for evolucion in evoluciones_siguientes_api %}
+                    <a href="{% url 'detalle' evolucion.numero %}"
+                       class="evolucion-card">
+
+                        <span class="evolucion-etapa">Siguiente etapa</span>
+
+                        <div class="evolucion-imagen-contenedor">
+                            {% if evolucion.imagen or evolucion.imagen_alternativa %}
+                                <img
+                                    src="{% if evolucion.imagen %}{{ evolucion.imagen }}{% else %}{{ evolucion.imagen_alternativa }}{% endif %}"
+                                    data-alternativas="{{ evolucion.imagen_alternativa }}"
+                                    class="evolucion-imagen imagen-con-alternativa"
+                                    alt="{{ evolucion.nombre }}"
+                                    loading="lazy"
+                                >
+                            {% endif %}
+                        </div>
+
+                        <span class="evolucion-numero">
+                            N.º {{ evolucion.numero|stringformat:"03d" }}
+                        </span>
+
+                        <strong class="evolucion-nombre">
+                            {{ evolucion.nombre }}
+                        </strong>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="detalle-vacio">
+                No se encontraron evoluciones posteriores para este Pokémon.
+            </div>
+        {% endif %}
+    </section>
+
+
+    <!-- ENTRENADOR -->
+    <section class="detalle-seccion">
+        <div class="seccion-encabezado">
+            <div>
+                <h2 class="seccion-titulo">Entrenador</h2>
+                <p class="seccion-descripcion">
+                    Información del entrenador relacionado con este Pokémon.
+                </p>
+            </div>
+        </div>
+
+        {% if entrenador %}
+            <article class="entrenador-card">
+                <div class="entrenador-imagen-contenedor">
+                    {% if entrenador.url_imagen %}
+                        <img
+                            src="{{ entrenador.url_imagen }}"
+                            class="entrenador-imagen"
+                            alt="{{ entrenador.nombre }} {{ entrenador.apellido }}"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                        >
+                    {% endif %}
+
+                    <div class="entrenador-iniciales"
+                         {% if entrenador.url_imagen %}style="display:none;"{% endif %}>
+                        {{ entrenador.nombre|first|upper }}{{ entrenador.apellido|first|upper }}
+                    </div>
+                </div>
+
+                <div class="entrenador-contenido">
+                    <span class="entrenador-etiqueta">
+                        Entrenador registrado
+                    </span>
+
+                    <h3 class="entrenador-nombre">
+                        {{ entrenador.nombre }} {{ entrenador.apellido }}
+                    </h3>
+
+                    <p class="entrenador-pueblo">
+                        Pueblo de origen:
+                        <strong>{{ entrenador.pueblo|default:"No especificado" }}</strong>
+                    </p>
+
+                    <div class="entrenador-datos">
+                        <div class="entrenador-dato">
+                            <span>Liga</span>
+                            <strong>
+                                {{ entrenador.get_liga_display|default:entrenador.liga|default:"No asignada" }}
+                            </strong>
+                        </div>
+
+                        <div class="entrenador-dato">
+                            <span>Medallas</span>
+                            <strong>{{ cantidad_medallas_entrenador|default:"0" }}</strong>
+                        </div>
+
+                        <div class="entrenador-dato">
+                            <span>Pokémon en equipo</span>
+                            <strong>{{ cantidad_pokemones_entrenador|default:"0" }}</strong>
+                        </div>
+
+                        <div class="entrenador-dato">
+                            <span>Clasificación</span>
+                            <strong>
+                                {% if entrenador.clasificado %}
+                                    Clasificado
+                                {% else %}
+                                    No clasificado
+                                {% endif %}
+                            </strong>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'pc_entrenador' entrenador.pk %}"
+                       class="entrenador-enlace">
+                        Consultar perfil y PC Pokémon →
+                    </a>
+                </div>
+            </article>
+        {% else %}
+            <div class="entrenador-no-asignado">
+                Este Pokémon no tiene un entrenador asignado actualmente
+                en la base de datos. La información de los entrenadores
+                existentes se conserva sin crear relaciones automáticamente.
+            </div>
+        {% endif %}
+    </section>
+
+</div>
+
+
+<!-- =====================================================
+     CARGA Y ALTERNATIVAS DE IMÁGENES
+===================================================== -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const imagenes = document.querySelectorAll(
+        ".imagen-con-alternativa"
+    );
+
+    imagenes.forEach(function (imagen) {
+
+        const contenedor = imagen.parentElement;
+        const aviso = contenedor.querySelector(
+            ".imagen-no-disponible"
+        );
+
+        const alternativasTexto = imagen.dataset.alternativas || "";
+
+        const alternativas = alternativasTexto
+            .split("|")
+            .map(url => url.trim())
+            .filter(url => url !== "");
+
+        const imagenesUnicas = [...new Set(alternativas)];
+
+        let indice = 0;
+
+        function mostrarImagen() {
+            imagen.style.display = "block";
+
+            if (aviso) {
+                aviso.style.display = "none";
+            }
+        }
+
+        function mostrarAviso() {
+            imagen.style.display = "none";
+
+            if (aviso) {
+                aviso.style.display = "block";
+            }
+        }
+
+        imagen.addEventListener("load", mostrarImagen);
+
+        imagen.addEventListener("error", function () {
+
+            while (indice < imagenesUnicas.length) {
+
+                const siguiente = imagenesUnicas[indice];
+                indice++;
+
+                if (siguiente !== imagen.src) {
+                    imagen.src = siguiente;
+                    return;
+                }
+            }
+
+            mostrarAviso();
+        });
+
+        if (imagen.complete) {
+            if (imagen.naturalWidth > 0) {
+                mostrarImagen();
+            } else {
+                imagen.dispatchEvent(new Event("error"));
+            }
+        }
+    });
+
+});
+</script>
+{% endblock %}
