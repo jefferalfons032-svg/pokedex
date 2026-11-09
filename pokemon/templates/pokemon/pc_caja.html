@@ -1,0 +1,1856 @@
+{% extends "pokemon/base.html" %}
+
+{% block titulo %}{{ caja.nombre }} | PC Pokémon{% endblock %}
+
+{% block encabezado %}
+PC POKÉMON / {{ caja.nombre }}
+{% endblock %}
+
+{% block estilos %}
+<style>
+.pc-pagina {
+    --fondo: #081426;
+    --panel: #10243d;
+    --panel-2: #172e4b;
+    --panel-3: #203b5c;
+    --borde: #315477;
+    --texto: #f2f7ff;
+    --suave: #a8bdd6;
+    --azul: #58a9ed;
+    --rojo: #e34455;
+    --amarillo: #f4c95d;
+
+    width: 100%;
+    max-width: 1550px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    color: var(--texto);
+    animation: pcEntrada .5s ease both;
+}
+
+.pc-pagina *,
+.pc-pagina *::before,
+.pc-pagina *::after {
+    box-sizing: border-box;
+}
+
+/* NAVEGACIÓN */
+
+.pc-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+    color: #9dccff !important;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none !important;
+    transition: .2s;
+}
+
+.pc-volver:hover {
+    color: white !important;
+    transform: translateX(-4px);
+}
+
+/* CABECERA PRINCIPAL */
+
+.pc-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 28px;
+    padding: 27px;
+    overflow: hidden;
+    border: 1px solid #3d6790;
+    border-radius: 22px;
+    background:
+        radial-gradient(circle at 15% 50%, #327fc54a, transparent 38%),
+        radial-gradient(circle at 95% 10%, #e3445520, transparent 35%),
+        linear-gradient(130deg, #1c3b5e, #0b192d 75%);
+    box-shadow: 0 18px 40px #0004;
+}
+
+.pc-hero::before,
+.pc-hero::after {
+    content: "";
+    position: absolute;
+    border: 1px solid #ffffff12;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.pc-hero::before {
+    width: 350px;
+    height: 350px;
+    right: -130px;
+    top: -190px;
+    box-shadow: 0 0 0 35px #ffffff06, 0 0 0 70px #ffffff04;
+}
+
+.pc-hero::after {
+    width: 170px;
+    height: 170px;
+    right: 30px;
+    bottom: -115px;
+}
+
+/* ENTRENADOR */
+
+.pc-entrenador-foto {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    min-height: 310px;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid #527da7;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle, #5b9ad14d, transparent 68%),
+        #10243d;
+}
+
+.pc-entrenador-foto::after {
+    content: "";
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    border: 1px solid #ffffff15;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.pc-entrenador-foto img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 310px;
+    padding: 12px;
+    object-fit: contain;
+    filter: drop-shadow(0 12px 15px #0008);
+    transition: transform .35s;
+}
+
+.pc-entrenador-foto:hover img {
+    transform: scale(1.06);
+}
+
+.pc-inicial {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    width: 115px;
+    height: 115px;
+    place-items: center;
+    border: 5px solid #e7f0fc;
+    border-radius: 50%;
+    color: white;
+    background: linear-gradient(145deg, #347bb5, #153352);
+    box-shadow: 0 0 0 8px #ffffff12, 0 10px 25px #0005;
+    font-size: 52px;
+    font-weight: 900;
+}
+
+/* INFORMACIÓN DEL ENTRENADOR */
+
+.pc-hero-info {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+}
+
+.pc-etiqueta {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 13px;
+    border: 1px solid #5485b2;
+    border-radius: 30px;
+    color: #cce5ff;
+    background: #183b5e;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.pc-indicador-operativo {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #58dc9a;
+    box-shadow: 0 0 9px #58dc9a;
+}
+
+.pc-hero h1 {
+    margin: 4px 0;
+    color: white !important;
+    font-size: clamp(29px, 4vw, 43px);
+    font-weight: 950;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+}
+
+.pc-hero p {
+    margin: 2px 0;
+    color: #b8cce3;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.pc-hero p strong {
+    color: white;
+}
+
+.pc-resumen {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 11px;
+    margin-top: 9px;
+}
+
+.pc-indicador {
+    min-width: 0;
+    padding: 15px;
+    border: 1px solid #3d5e80;
+    border-radius: 13px;
+    background: #0b1b2fd9;
+    transition: .2s;
+}
+
+.pc-indicador:hover {
+    border-color: #75b9f1;
+    transform: translateY(-3px);
+}
+
+.pc-indicador strong {
+    display: block;
+    color: white;
+    font-size: 28px;
+    font-weight: 950;
+}
+
+.pc-indicador span {
+    display: block;
+    margin-top: 5px;
+    color: #a9c0da;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+/* PROFESOR */
+
+.pc-profesor {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 7px;
+    padding: 13px;
+    border: 1px solid #3d6084;
+    border-radius: 14px;
+    background: #142b46e8;
+}
+
+.pc-profesor-foto {
+    display: grid;
+    width: 75px;
+    height: 80px;
+    flex-shrink: 0;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid #527ba4;
+    border-radius: 11px;
+    background: #294b6d;
+}
+
+.pc-profesor-foto img {
+    width: 100%;
+    height: 100%;
+    padding: 4px;
+    object-fit: contain;
+}
+
+.pc-profesor-foto span {
+    color: #d5eaff;
+    font-size: 29px;
+    font-weight: 900;
+}
+
+.pc-profesor-info {
+    min-width: 0;
+}
+
+.pc-profesor-info strong {
+    display: block;
+    color: white;
+    font-size: 14px;
+}
+
+.pc-profesor-info span {
+    display: block;
+    margin-top: 5px;
+    color: #a9c1dc;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* SECCIONES */
+
+.pc-seccion {
+    min-width: 0;
+    padding: 25px;
+    border: 1px solid #304e6d;
+    border-radius: 19px;
+    background:
+        linear-gradient(145deg, #172e49, #0d1d31);
+    box-shadow: 0 12px 30px #0003;
+}
+
+.pc-seccion-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 21px;
+}
+
+.pc-titulo-grupo {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.pc-icono-seccion {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    place-items: center;
+    border: 1px solid #527da5;
+    border-radius: 12px;
+    color: #cce5ff;
+    background: linear-gradient(145deg, #285783, #153553);
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.pc-seccion h2 {
+    margin: 0;
+    color: #f5f8ff !important;
+    font-size: 22px;
+    font-weight: 950;
+}
+
+.pc-descripcion {
+    margin: 6px 0 0;
+    color: #a9bad0;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.pc-contador {
+    padding: 9px 13px;
+    border: 1px solid #426587;
+    border-radius: 25px;
+    color: #d9ebff;
+    background: #1a3553;
+    font-size: 10px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+/* BUSCADOR */
+
+.pc-buscador {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 230px auto;
+    gap: 11px;
+    margin-bottom: 14px;
+    padding: 15px;
+    border: 1px solid #365675;
+    border-radius: 14px;
+    background:
+        linear-gradient(120deg, #142a43, #0d1c30);
+}
+
+.pc-campo-busqueda {
+    position: relative;
+    min-width: 0;
+}
+
+.pc-campo-busqueda input,
+.pc-buscador select {
+    width: 100%;
+    min-width: 0;
+    min-height: 47px;
+    padding: 12px 14px;
+    border: 1px solid #3c5e7e;
+    border-radius: 10px;
+    outline: none;
+    color: #f3f7ff;
+    background: #0c1b2e;
+    font-family: inherit;
+    font-size: 13px;
+    transition: .2s;
+}
+
+.pc-campo-busqueda input::placeholder {
+    color: #829bb7;
+}
+
+.pc-campo-busqueda input:focus,
+.pc-buscador select:focus {
+    border-color: #69b7f4;
+    box-shadow: 0 0 0 3px #69b7f420;
+}
+
+.pc-buscador select option {
+    color: white;
+    background: #10243d;
+}
+
+.pc-buscador-limpiar {
+    min-height: 47px;
+    padding: 11px 17px;
+    border: 1px solid #d64b5b;
+    border-radius: 10px;
+    color: white;
+    background: linear-gradient(135deg, #d74455, #a9253a);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.pc-buscador-limpiar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 17px #c8324645;
+    background: #e34e60;
+}
+
+.pc-resultados {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 17px;
+    color: #a9bdd4;
+    font-size: 11px;
+}
+
+.pc-resultados strong {
+    color: #dcecff;
+}
+
+/* CUADRÍCULA */
+
+.pc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
+    gap: 17px;
+}
+
+/* TARJETAS */
+
+.pokemon-card {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #365574;
+    border-radius: 16px;
+    background: linear-gradient(155deg, #1a3451, #102239);
+    transition: transform .25s, border-color .25s, box-shadow .25s;
+}
+
+.pokemon-card:hover {
+    transform: translateY(-5px);
+    border-color: #70b8f3;
+    box-shadow: 0 14px 28px #0005;
+}
+
+.pokemon-card[hidden] {
+    display: none !important;
+}
+
+.pokemon-imagen {
+    position: relative;
+    display: grid;
+    height: 205px;
+    flex-shrink: 0;
+    place-items: center;
+    overflow: hidden;
+    border-bottom: 1px solid #365574;
+    background:
+        radial-gradient(circle at 50% 55%, #5a9ed54a, transparent 65%),
+        linear-gradient(145deg, #203d5c, #12273e);
+}
+
+.pokemon-imagen::before {
+    content: "";
+    position: absolute;
+    width: 145px;
+    height: 145px;
+    border: 1px solid #ffffff12;
+    border-radius: 50%;
+    box-shadow: 0 0 0 18px #ffffff06, 0 0 0 38px #ffffff04;
+}
+
+.pokemon-imagen img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    padding: 14px;
+    object-fit: contain;
+    filter: drop-shadow(0 9px 10px #0007);
+    transition: transform .3s;
+}
+
+.pokemon-card:hover .pokemon-imagen img {
+    transform: scale(1.09);
+}
+
+.imagen-fallback {
+    position: relative;
+    z-index: 1;
+    display: none;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 7px;
+    padding: 15px;
+    color: #d6e8fb;
+    font-size: 14px;
+    font-weight: 800;
+    text-align: center;
+}
+
+/* CONTENIDO DE TARJETA */
+
+.pokemon-cuerpo {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 16px;
+}
+
+.pokemon-superior {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.pokemon-numero {
+    color: #a9c2dc;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .6px;
+}
+
+.pokemon-estado {
+    padding: 5px 9px;
+    border: 1px solid #39785f;
+    border-radius: 20px;
+    color: #a8ebc9;
+    background: #1e493c;
+    font-size: 9px;
+    font-weight: 900;
+}
+
+.pokemon-nombre {
+    margin: 11px 0 12px;
+    color: white !important;
+    font-size: 23px;
+    font-weight: 950;
+    text-transform: capitalize;
+    overflow-wrap: anywhere;
+}
+
+.pokemon-clasificacion,
+.pokemon-tipos,
+.pokemon-habilidades,
+.pokemon-evoluciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.clasificacion {
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-weight: 900;
+}
+
+.clasificacion-legendario {
+    border: 1px solid #a58a43;
+    color: #ffe3a1;
+    background: #51401d;
+}
+
+.clasificacion-normal {
+    border: 1px solid #426181;
+    color: #d2e5fa;
+    background: #263f59;
+}
+
+.pokemon-subtitulo {
+    margin: 17px 0 9px;
+    color: #a9c0d9;
+    font-size: 9px;
+    font-weight: 950;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+}
+
+.pokemon-tipo {
+    padding: 6px 10px;
+    border: 1px solid #ffffff30;
+    border-radius: 20px;
+    color: white;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: capitalize;
+}
+
+.pokemon-habilidad,
+.pokemon-evolucion {
+    padding: 7px 9px;
+    border: 1px solid #405c79;
+    border-radius: 8px;
+    color: #dce9f7;
+    background: #263e57;
+    font-size: 10px;
+}
+
+.pokemon-vacio {
+    color: #94aac3;
+    font-size: 11px;
+}
+
+/* DATOS */
+
+.pokemon-datos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.pokemon-dato {
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid #344f6c;
+    border-radius: 9px;
+    background: #0d1c2f;
+}
+
+.pokemon-dato span {
+    display: block;
+    margin-bottom: 5px;
+    color: #9fb4cb;
+    font-size: 9px;
+}
+
+.pokemon-dato strong {
+    color: #f2f6fc;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+/* ESTADÍSTICAS */
+
+.pokemon-estadisticas {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
+
+.stat-fila {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr) 30px;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-nombre {
+    color: #aabbd0;
+    font-size: 10px;
+}
+
+.stat-barra {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 20px;
+    background: #091626;
+}
+
+.stat-relleno {
+    height: 100%;
+    border-radius: 20px;
+    background: linear-gradient(90deg, #b52d3d, #ed6874);
+}
+
+.stat-valor {
+    color: white;
+    font-size: 10px;
+    font-weight: 900;
+    text-align: right;
+}
+
+/* BOTONES */
+
+.pokemon-acciones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    margin-top: auto;
+    padding-top: 19px;
+}
+
+.pokemon-acciones form {
+    min-width: 0;
+}
+
+.pokemon-boton {
+    display: flex;
+    width: 100%;
+    min-height: 43px;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border: 1px solid #d34a58;
+    border-radius: 9px;
+    color: white !important;
+    background: linear-gradient(135deg, #d34253, #ae293e) !important;
+    font-size: 10px;
+    font-weight: 950;
+    text-align: center;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.pokemon-boton:hover {
+    transform: translateY(-2px);
+    background: #e04b5d !important;
+    box-shadow: 0 7px 15px #0003;
+}
+
+.pokemon-boton-secundario {
+    border-color: #4d79a2;
+    background: linear-gradient(135deg, #2e5d87, #214669) !important;
+}
+
+.pokemon-boton-secundario:hover {
+    background: #326b9f !important;
+}
+
+/* BOTÓN DE GUARDAR */
+
+.pokemon-guardar-form {
+    margin-top: auto;
+    padding-top: 19px;
+}
+
+/* SIN RESULTADOS */
+
+.pc-sin-resultados {
+    display: none;
+    padding: 35px 20px;
+    border: 1px dashed #527394;
+    border-radius: 14px;
+    color: #a9bdd4;
+    background: #11243a;
+    text-align: center;
+}
+
+.pc-sin-resultados strong {
+    display: block;
+    margin-bottom: 8px;
+    color: white;
+    font-size: 17px;
+}
+
+/* ESTADOS VACÍOS */
+
+.pc-vacio {
+    padding: 38px 20px;
+    border: 1px dashed #49617e;
+    border-radius: 14px;
+    background: #15243a;
+    text-align: center;
+}
+
+.pc-vacio h3 {
+    margin: 0 0 9px;
+    color: #edf2fa;
+    font-size: 18px;
+}
+
+.pc-vacio p {
+    max-width: 600px;
+    margin: 0 auto;
+    color: #a9bad0;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+/* MEDALLAS */
+
+.pc-medallas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.pc-medalla {
+    padding: 11px 14px;
+    border: 1px solid #49617e;
+    border-radius: 10px;
+    color: #dce7f5;
+    background: #1b304a;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.pc-medalla strong {
+    color: #f6d67c;
+}
+
+/* ENLACES */
+
+.pc-enlaces {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 11px;
+}
+
+.pc-enlaces a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 17px;
+    border: 1px solid #466b94;
+    border-radius: 9px;
+    color: #e1edff !important;
+    background: #1e3d60;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none !important;
+    transition: .2s;
+}
+
+.pc-enlaces a:hover {
+    transform: translateY(-2px);
+    background: #2a5684;
+}
+
+/* ANIMACIONES */
+
+@keyframes pcEntrada {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 950px) {
+    .pc-hero {
+        grid-template-columns: 220px minmax(0, 1fr);
+        gap: 19px;
+    }
+
+    .pc-entrenador-foto,
+    .pc-entrenador-foto img {
+        min-height: 270px;
+        height: 270px;
+    }
+
+    .pc-resumen {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pc-buscador {
+        grid-template-columns: minmax(0, 1fr) 190px;
+    }
+
+    .pc-buscador-limpiar {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 650px) {
+    .pc-hero {
+        grid-template-columns: 1fr;
+        padding: 17px;
+    }
+
+    .pc-entrenador-foto,
+    .pc-entrenador-foto img {
+        min-height: 250px;
+        height: 250px;
+    }
+
+    .pc-hero h1 {
+        font-size: 29px;
+    }
+
+    .pc-seccion {
+        padding: 16px;
+    }
+
+    .pc-seccion-cabecera {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pc-titulo-grupo {
+        align-items: flex-start;
+    }
+
+    .pc-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pokemon-imagen {
+        height: 240px;
+    }
+
+    .pc-buscador {
+        grid-template-columns: 1fr;
+    }
+
+    .pc-buscador-limpiar {
+        grid-column: auto;
+    }
+
+    .pc-profesor {
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 390px) {
+    .pc-resumen {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .pokemon-acciones {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-fila {
+        grid-template-columns: 75px minmax(0, 1fr) 27px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pc-pagina *,
+    .pc-pagina *::before,
+    .pc-pagina *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+</style>
+{% endblock %}
+
+
+{% block contenido %}
+
+<section class="pc-pagina">
+
+    <a class="pc-volver"
+       href="{% url 'pc_entrenador' entrenador_id=entrenador.pk %}">
+        ← Volver al entrenador
+    </a>
+
+    <!-- PERFIL DEL ENTRENADOR -->
+
+    <header class="pc-hero">
+
+        <div class="pc-entrenador-foto">
+
+            {% if entrenador.url_imagen %}
+                <img
+                    src="{{ entrenador.url_imagen }}"
+                    alt="Fotografía de {{ entrenador.nombre }} {{ entrenador.apellido }}"
+                    loading="eager"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
+                >
+                <span class="pc-inicial" style="display:none;">
+                    {{ entrenador.nombre|first|upper }}
+                </span>
+            {% else %}
+                <span class="pc-inicial">
+                    {{ entrenador.nombre|first|upper }}
+                </span>
+            {% endif %}
+
+        </div>
+
+        <div class="pc-hero-info">
+
+            <span class="pc-etiqueta">
+                <span class="pc-indicador-operativo"></span>
+                CENTRO DE ALMACENAMIENTO POKÉMON
+            </span>
+
+            <h1>{{ caja.nombre }}</h1>
+
+            <p>
+                Entrenador:
+                <strong>{{ entrenador.nombre }} {{ entrenador.apellido }}</strong>
+            </p>
+
+            <p>
+                Pueblo:
+                <strong>{{ entrenador.pueblo|default:"No registrado" }}</strong>
+            </p>
+
+            <p>
+                Liga:
+                <strong>{{ entrenador.get_liga_display|default:"No registrada" }}</strong>
+            </p>
+
+            <div class="pc-resumen">
+
+                <div class="pc-indicador">
+                    <strong>{{ pokemones|length }}</strong>
+                    <span>Pokémon almacenados</span>
+                </div>
+
+                <div class="pc-indicador">
+                    <strong>{{ disponibles|length }}</strong>
+                    <span>Pokémon disponibles</span>
+                </div>
+
+                <div class="pc-indicador">
+                    <strong>{{ medallas|length }}</strong>
+                    <span>Gimnasios relacionados</span>
+                </div>
+
+            </div>
+
+            <!-- PROFESOR RESPONSABLE -->
+
+            {% if caja.profesor %}
+
+                <div class="pc-profesor">
+
+                    <div class="pc-profesor-foto">
+
+                        {% if caja.profesor.imagen_archivo %}
+                            <img
+                                src="{{ caja.profesor.imagen_archivo.url }}"
+                                alt="Profesor {{ caja.profesor.nombre }}"
+                                loading="lazy"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                            >
+                            <span style="display:none;">
+                                {{ caja.profesor.nombre|first|upper }}
+                            </span>
+                        {% else %}
+                            <span>
+                                {{ caja.profesor.nombre|first|upper }}
+                            </span>
+                        {% endif %}
+
+                    </div>
+
+                    <div class="pc-profesor-info">
+                        <strong>
+                            {{ caja.profesor.nombre }}
+                            {{ caja.profesor.apellido }}
+                        </strong>
+
+                        <span>
+                            Profesor responsable ·
+                            {{ caja.profesor.especialidad|default:"Especialidad no registrada" }}
+                        </span>
+                    </div>
+
+                </div>
+
+            {% else %}
+
+                <div class="pc-profesor">
+                    <div class="pc-profesor-foto">
+                        <span>?</span>
+                    </div>
+                    <div class="pc-profesor-info">
+                        <strong>Profesor no asignado</strong>
+                        <span>Esta caja no tiene un profesor responsable.</span>
+                    </div>
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </header>
+
+
+    <!-- POKÉMON ALMACENADOS -->
+
+    <section class="pc-seccion">
+
+        <div class="pc-seccion-cabecera">
+            <div class="pc-titulo-grupo">
+                <div class="pc-icono-seccion">PC</div>
+                <div>
+                    <h2>Pokémon almacenados</h2>
+                    <p class="pc-descripcion">
+                        Consulta los Pokémon guardados en esta caja, sus imágenes,
+                        elementos, habilidades y estadísticas.
+                    </p>
+                </div>
+            </div>
+
+            <span class="pc-contador">
+                {{ pokemones|length }} REGISTRADOS
+            </span>
+        </div>
+
+        {% if pokemones %}
+
+            <div class="pc-grid">
+
+                {% for pokemon in pokemones %}
+
+                    <article class="pokemon-card">
+
+                        <div class="pokemon-imagen">
+
+                            {% if pokemon.url_imagen %}
+                                <img
+                                    src="{{ pokemon.url_imagen }}"
+                                    alt="{{ pokemon.nombre }}"
+                                    loading="lazy"
+                                    onerror="this.onerror=null; this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{{ pokemon.numero }}.png'; this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='flex';};"
+                                >
+                            {% else %}
+                                <img
+                                    src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{{ pokemon.numero }}.png"
+                                    alt="{{ pokemon.nombre }}"
+                                    loading="lazy"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                >
+                            {% endif %}
+
+                            <div class="imagen-fallback">
+                                {{ pokemon.nombre }}
+                                <span>Imagen no disponible</span>
+                            </div>
+
+                        </div>
+
+                        <div class="pokemon-cuerpo">
+
+                            <div class="pokemon-superior">
+                                <span class="pokemon-numero">
+                                    POKÉDEX N.º {{ pokemon.numero|stringformat:"03d" }}
+                                </span>
+
+                                <span class="pokemon-estado">
+                                    ALMACENADO
+                                </span>
+                            </div>
+
+                            <h3 class="pokemon-nombre">
+                                {{ pokemon.nombre }}
+                            </h3>
+
+                            <div class="pokemon-clasificacion">
+                                {% if pokemon.es_legendario %}
+                                    <span class="clasificacion clasificacion-legendario">
+                                        LEGENDARIO
+                                    </span>
+                                {% else %}
+                                    <span class="clasificacion clasificacion-normal">
+                                        POKÉMON
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="pokemon-subtitulo">
+                                Tipos y elementos
+                            </div>
+
+                            <div class="pokemon-tipos">
+                                {% for tipo in pokemon.tipos.all %}
+                                    <span
+                                        class="pokemon-tipo"
+                                        style="background-color: {{ tipo.color|default:'#40536d' }};"
+                                    >
+                                        {{ tipo.nombre }}
+                                    </span>
+                                {% empty %}
+                                    <span class="pokemon-vacio">
+                                        Sin tipos registrados.
+                                    </span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="pokemon-subtitulo">
+                                Habilidades
+                            </div>
+
+                            <div class="pokemon-habilidades">
+                                {% for habilidad in pokemon.habilidades.all %}
+                                    <span class="pokemon-habilidad">
+                                        {{ habilidad.nombre }}
+                                    </span>
+                                {% empty %}
+                                    <span class="pokemon-vacio">
+                                        Sin habilidades registradas.
+                                    </span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="pokemon-subtitulo">
+                                Información general
+                            </div>
+
+                            <div class="pokemon-datos">
+
+                                <div class="pokemon-dato">
+                                    <span>Altura</span>
+                                    <strong>{{ pokemon.altura }} dm</strong>
+                                </div>
+
+                                <div class="pokemon-dato">
+                                    <span>Peso</span>
+                                    <strong>{{ pokemon.peso }} hg</strong>
+                                </div>
+
+                                <div class="pokemon-dato">
+                                    <span>Experiencia base</span>
+                                    <strong>{{ pokemon.experiencia_base }}</strong>
+                                </div>
+
+                                <div class="pokemon-dato">
+                                    <span>Clasificación</span>
+                                    <strong>
+                                        {% if pokemon.es_legendario %}
+                                            Legendario
+                                        {% else %}
+                                            Normal
+                                        {% endif %}
+                                    </strong>
+                                </div>
+
+                            </div>
+
+                            <div class="pokemon-subtitulo">
+                                Estadísticas de combate
+                            </div>
+
+                            <div class="pokemon-estadisticas">
+
+                                <div class="stat-fila">
+                                    <span class="stat-nombre">PS / HP</span>
+                                    <div class="stat-barra">
+                                        <div class="stat-relleno"
+                                             style="width:{% widthratio pokemon.hp 255 100 %}%;"></div>
+                                    </div>
+                                    <span class="stat-valor">{{ pokemon.hp }}</span>
+                                </div>
+
+                                <div class="stat-fila">
+                                    <span class="stat-nombre">Ataque</span>
+                                    <div class="stat-barra">
+                                        <div class="stat-relleno"
+                                             style="width:{% widthratio pokemon.ataque 255 100 %}%;"></div>
+                                    </div>
+                                    <span class="stat-valor">{{ pokemon.ataque }}</span>
+                                </div>
+
+                                <div class="stat-fila">
+                                    <span class="stat-nombre">Defensa</span>
+                                    <div class="stat-barra">
+                                        <div class="stat-relleno"
+                                             style="width:{% widthratio pokemon.defensa 255 100 %}%;"></div>
+                                    </div>
+                                    <span class="stat-valor">{{ pokemon.defensa }}</span>
+                                </div>
+
+                                <div class="stat-fila">
+                                    <span class="stat-nombre">At. especial</span>
+                                    <div class="stat-barra">
+                                        <div class="stat-relleno"
+                                             style="width:{% widthratio pokemon.ataque_especial 255 100 %}%;"></div>
+                                    </div>
+                                    <span class="stat-valor">{{ pokemon.ataque_especial }}</span>
+                                </div>
+
+                                <div class="stat-fila">
+                                    <span class="stat-nombre">Def. especial</span>
+                                    <div class="stat-barra">
+                                        <div class="stat-relleno"
+                                             style="width:{% widthratio pokemon.defensa_especial 255 100 %}%;"></div>
+                                    </div>
+                                    <span class="stat-valor">{{ pokemon.defensa_especial }}</span>
+                                </div>
+
+                                <div class="stat-fila">
+                                    <span class="stat-nombre">Velocidad</span>
+                                    <div class="stat-barra">
+                                        <div class="stat-relleno"
+                                             style="width:{% widthratio pokemon.velocidad 255 100 %}%;"></div>
+                                    </div>
+                                    <span class="stat-valor">{{ pokemon.velocidad }}</span>
+                                </div>
+
+                            </div>
+
+                            <div class="pokemon-subtitulo">
+                                Evoluciones
+                            </div>
+
+                            <div class="pokemon-evoluciones">
+                                {% for evolucion in pokemon.evoluciones.all %}
+                                    <span class="pokemon-evolucion">
+                                        {{ evolucion.nombre }}
+                                    </span>
+                                {% empty %}
+                                    <span class="pokemon-vacio">
+                                        Sin evoluciones registradas.
+                                    </span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="pokemon-acciones">
+
+                                <a
+                                    class="pokemon-boton pokemon-boton-secundario"
+                                    href="{% url 'detalle' numero=pokemon.numero %}"
+                                >
+                                    Ver Pokédex
+                                </a>
+
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="accion" value="retirar">
+                                    <input type="hidden" name="pokemon_id" value="{{ pokemon.pk }}">
+
+                                    <button class="pokemon-boton" type="submit">
+                                        Retirar
+                                    </button>
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="pc-vacio">
+                <h3>Esta caja todavía está vacía</h3>
+                <p>
+                    Selecciona un Pokémon de la sección de disponibles para
+                    comenzar a organizar tu almacenamiento.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- AGREGAR POKÉMON -->
+
+    <section class="pc-seccion" id="seccion-agregar-pokemon">
+
+        <div class="pc-seccion-cabecera">
+
+            <div class="pc-titulo-grupo">
+                <div class="pc-icono-seccion">+</div>
+                <div>
+                    <h2>Agregar Pokémon a la caja</h2>
+                    <p class="pc-descripcion">
+                        Busca, filtra y selecciona Pokémon para incorporarlos
+                        al almacenamiento de este entrenador.
+                    </p>
+                </div>
+            </div>
+
+            <span class="pc-contador">
+                {{ disponibles|length }} DISPONIBLES
+            </span>
+
+        </div>
+
+        {% if disponibles %}
+
+            <!-- BUSCADOR -->
+
+            <div class="pc-buscador">
+
+                <div class="pc-campo-busqueda">
+                    <input
+                        type="search"
+                        id="pc-buscar-pokemon"
+                        placeholder="Buscar por nombre o número de Pokédex..."
+                        autocomplete="off"
+                        aria-label="Buscar Pokémon por nombre o número"
+                    >
+                </div>
+
+                <select
+                    id="pc-filtrar-tipo"
+                    aria-label="Filtrar Pokémon por tipo"
+                >
+                    <option value="">Todos los tipos</option>
+                </select>
+
+                <button
+                    type="button"
+                    class="pc-buscador-limpiar"
+                    id="pc-limpiar-busqueda"
+                >
+                    Limpiar filtros
+                </button>
+
+            </div>
+
+            <div class="pc-resultados">
+                <span id="pc-resultados">
+                    Mostrando {{ disponibles|length }} Pokémon disponibles.
+                </span>
+                <strong>Selecciona un Pokémon para guardarlo en esta caja.</strong>
+            </div>
+
+            <!-- TARJETAS DISPONIBLES -->
+
+            <div class="pc-grid" id="pc-grid-disponibles">
+
+                {% for pokemon in disponibles %}
+
+                    <article
+                        class="pokemon-card"
+                        data-nombre="{{ pokemon.nombre }}"
+                        data-numero="{{ pokemon.numero }}"
+                        data-tipos="{% for tipo in pokemon.tipos.all %}{{ tipo.nombre }}{% if not forloop.last %}|{% endif %}{% endfor %}"
+                    >
+
+                        <div class="pokemon-imagen">
+
+                            {% if pokemon.url_imagen %}
+                                <img
+                                    src="{{ pokemon.url_imagen }}"
+                                    alt="{{ pokemon.nombre }}"
+                                    loading="lazy"
+                                    onerror="this.onerror=null; this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{{ pokemon.numero }}.png'; this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='flex';};"
+                                >
+                            {% else %}
+                                <img
+                                    src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{{ pokemon.numero }}.png"
+                                    alt="{{ pokemon.nombre }}"
+                                    loading="lazy"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                >
+                            {% endif %}
+
+                            <div class="imagen-fallback">
+                                {{ pokemon.nombre }}
+                                <span>Imagen no disponible</span>
+                            </div>
+
+                        </div>
+
+                        <div class="pokemon-cuerpo">
+
+                            <div class="pokemon-superior">
+                                <span class="pokemon-numero">
+                                    POKÉDEX N.º {{ pokemon.numero|stringformat:"03d" }}
+                                </span>
+                            </div>
+
+                            <h3 class="pokemon-nombre">
+                                {{ pokemon.nombre }}
+                            </h3>
+
+                            <div class="pokemon-clasificacion">
+                                {% if pokemon.es_legendario %}
+                                    <span class="clasificacion clasificacion-legendario">
+                                        LEGENDARIO
+                                    </span>
+                                {% else %}
+                                    <span class="clasificacion clasificacion-normal">
+                                        POKÉMON
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="pokemon-subtitulo">
+                                Tipos y elementos
+                            </div>
+
+                            <div class="pokemon-tipos">
+                                {% for tipo in pokemon.tipos.all %}
+                                    <span
+                                        class="pokemon-tipo"
+                                        style="background-color: {{ tipo.color|default:'#40536d' }};"
+                                    >
+                                        {{ tipo.nombre }}
+                                    </span>
+                                {% empty %}
+                                    <span class="pokemon-vacio">
+                                        Sin tipos registrados.
+                                    </span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="pokemon-subtitulo">
+                                Habilidades
+                            </div>
+
+                            <div class="pokemon-habilidades">
+                                {% for habilidad in pokemon.habilidades.all %}
+                                    <span class="pokemon-habilidad">
+                                        {{ habilidad.nombre }}
+                                    </span>
+                                {% empty %}
+                                    <span class="pokemon-vacio">
+                                        Sin habilidades registradas.
+                                    </span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="pokemon-subtitulo">
+                                Estadísticas principales
+                            </div>
+
+                            <div class="pokemon-datos">
+
+                                <div class="pokemon-dato">
+                                    <span>PS / HP</span>
+                                    <strong>{{ pokemon.hp }}</strong>
+                                </div>
+
+                                <div class="pokemon-dato">
+                                    <span>Ataque</span>
+                                    <strong>{{ pokemon.ataque }}</strong>
+                                </div>
+
+                                <div class="pokemon-dato">
+                                    <span>Defensa</span>
+                                    <strong>{{ pokemon.defensa }}</strong>
+                                </div>
+
+                                <div class="pokemon-dato">
+                                    <span>Velocidad</span>
+                                    <strong>{{ pokemon.velocidad }}</strong>
+                                </div>
+
+                            </div>
+
+                            <form method="post" class="pokemon-guardar-form">
+                                {% csrf_token %}
+
+                                <input type="hidden" name="accion" value="guardar">
+                                <input type="hidden" name="pokemon_id" value="{{ pokemon.pk }}">
+
+                                <button class="pokemon-boton" type="submit">
+                                    Guardar en esta caja
+                                </button>
+                            </form>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+            <div class="pc-sin-resultados" id="pc-sin-resultados">
+                <strong>No se encontraron Pokémon</strong>
+                No hay coincidencias. Prueba con otro nombre, número o tipo.
+            </div>
+
+        {% else %}
+
+            <div class="pc-vacio">
+                <h3>No hay Pokémon disponibles</h3>
+                <p>
+                    No hay Pokémon libres o pertenecientes a este entrenador
+                    que puedan guardarse en esta caja.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- GIMNASIOS Y MEDALLAS -->
+
+    <section class="pc-seccion">
+
+        <div class="pc-seccion-cabecera">
+
+            <div class="pc-titulo-grupo">
+                <div class="pc-icono-seccion">M</div>
+                <div>
+                    <h2>Gimnasios y medallas</h2>
+                    <p class="pc-descripcion">
+                        Gimnasios relacionados con este entrenador.
+                    </p>
+                </div>
+            </div>
+
+            <span class="pc-contador">
+                {{ medallas|length }} REGISTRADOS
+            </span>
+
+        </div>
+
+        {% if medallas %}
+
+            <div class="pc-medallas">
+
+                {% for gimnasio in medallas %}
+                    <div class="pc-medalla">
+                        <strong>{{ gimnasio.medalla }}</strong>
+                        · {{ gimnasio.ciudad }}
+
+                        {% if gimnasio.tipo %}
+                            · {{ gimnasio.tipo.nombre }}
+                        {% endif %}
+
+                        {% if gimnasio.region %}
+                            · {{ gimnasio.region.nombre }}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="pc-vacio">
+                <h3>Sin gimnasios registrados</h3>
+                <p>
+                    Este entrenador todavía no tiene gimnasios asociados.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- NAVEGACIÓN FINAL -->
+
+    <nav class="pc-enlaces">
+
+        <a href="{% url 'pc_entrenador' entrenador_id=entrenador.pk %}">
+            ← Volver al entrenador
+        </a>
+
+        <a href="{% url 'modulo_lista' modulo='entrenadores' %}">
+            Ver directorio de entrenadores
+        </a>
+
+    </nav>
+
+</section>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const buscador = document.getElementById("pc-buscar-pokemon");
+    const filtroTipo = document.getElementById("pc-filtrar-tipo");
+    const botonLimpiar = document.getElementById("pc-limpiar-busqueda");
+    const contador = document.getElementById("pc-resultados");
+    const mensajeVacio = document.getElementById("pc-sin-resultados");
+
+    const tarjetas = Array.from(
+        document.querySelectorAll(
+            "#pc-grid-disponibles .pokemon-card"
+        )
+    );
+
+    if (!buscador || !filtroTipo || !botonLimpiar) {
+        return;
+    }
+
+    function normalizar(texto) {
+        return String(texto || "")
+            .toLocaleLowerCase("es")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+    }
+
+    // Obtener los tipos registrados en los Pokémon disponibles.
+    const tipos = new Map();
+
+    tarjetas.forEach(function (tarjeta) {
+
+        const tiposPokemon = (
+            tarjeta.dataset.tipos || ""
+        ).split("|");
+
+        tiposPokemon.forEach(function (tipo) {
+
+            const nombre = tipo.trim();
+            const clave = normalizar(nombre);
+
+            if (nombre && clave) {
+                tipos.set(clave, nombre);
+            }
+
+        });
+
+    });
+
+    // Crear automáticamente las opciones del selector.
+    Array.from(tipos.entries())
+        .sort(function (a, b) {
+            return a[1].localeCompare(b[1], "es");
+        })
+        .forEach(function (elemento) {
+
+            const opcion = document.createElement("option");
+
+            opcion.value = elemento[0];
+            opcion.textContent = elemento[1];
+
+            filtroTipo.appendChild(opcion);
+
+        });
+
+    function filtrarPokemones() {
+
+        const busqueda = normalizar(buscador.value);
+        const tipoSeleccionado = filtroTipo.value;
+
+        // Permite buscar 25, #25, #0025 y 0025.
+        const numeroBusqueda = busqueda.replace(/#/g, "").trim();
+
+        const esNumero = /^\d+$/.test(numeroBusqueda);
+
+        let cantidadVisibles = 0;
+
+        tarjetas.forEach(function (tarjeta) {
+
+            const nombre = normalizar(
+                tarjeta.dataset.nombre
+            );
+
+            const numero = String(
+                tarjeta.dataset.numero || ""
+            );
+
+            const tiposPokemon = (
+                tarjeta.dataset.tipos || ""
+            )
+                .split("|")
+                .map(normalizar);
+
+            const coincideNombre = nombre.includes(busqueda);
+
+            const coincideNumero = esNumero && (
+                numero === String(Number(numeroBusqueda)) ||
+                numero.padStart(4, "0") === numeroBusqueda.padStart(4, "0")
+            );
+
+            const coincideBusqueda = (
+                !busqueda ||
+                coincideNombre ||
+                coincideNumero
+            );
+
+            const coincideTipo = (
+                !tipoSeleccionado ||
+                tiposPokemon.includes(tipoSeleccionado)
+            );
+
+            const mostrar = (
+                coincideBusqueda &&
+                coincideTipo
+            );
+
+            tarjeta.hidden = !mostrar;
+
+            if (mostrar) {
+                cantidadVisibles++;
+            }
+
+        });
+
+        if (contador) {
+            contador.textContent =
+                `Mostrando ${cantidadVisibles} de ${tarjetas.length} Pokémon disponibles.`;
+        }
+
+        if (mensajeVacio) {
+            mensajeVacio.style.display =
+                cantidadVisibles === 0 ? "block" : "none";
+        }
+
+    }
+
+    buscador.addEventListener(
+        "input",
+        filtrarPokemones
+    );
+
+    filtroTipo.addEventListener(
+        "change",
+        filtrarPokemones
+    );
+
+    botonLimpiar.addEventListener(
+        "click",
+        function () {
+
+            buscador.value = "";
+            filtroTipo.value = "";
+
+            filtrarPokemones();
+
+            buscador.focus();
+
+        }
+    );
+
+    filtrarPokemones();
+
+});
+</script>
+{% endblock %}

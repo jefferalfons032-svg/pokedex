@@ -1,0 +1,435 @@
+
+{% extends "pokemon/base.html" %}
+
+{% block titulo %}Pokédex | Explorador Pokémon{% endblock %}
+{% block encabezado %}Explorador Pokémon{% endblock %}
+
+{% block estilos %}
+<style>
+    .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 38px;
+        border: 1px solid #294c78;
+        border-radius: 16px;
+        background:
+            radial-gradient(circle at 85% 20%, rgba(57,136,255,.22), transparent 35%),
+            linear-gradient(120deg, #142d4d, #101e33 70%);
+        margin-bottom: 27px;
+    }
+
+    .hero::after {
+        content: "P";
+        position: absolute;
+        right: 45px;
+        top: -50px;
+        font-size: 240px;
+        font-weight: 800;
+        color: rgba(101,167,255,.055);
+        pointer-events: none;
+    }
+
+    .hero-contenido {
+        position: relative;
+        z-index: 1;
+        max-width: 650px;
+    }
+
+    .etiqueta {
+        color: #76b3ff;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        margin-bottom: 15px;
+    }
+
+    .hero h1 {
+        font-size: clamp(27px, 4vw, 42px);
+        line-height: 1.15;
+        margin-bottom: 13px;
+    }
+
+    .hero p {
+        color: #a8bdd8;
+        font-size: 13px;
+        line-height: 1.8;
+        max-width: 490px;
+    }
+
+    .hero-boton {
+        display: inline-block;
+        margin-top: 23px;
+        padding: 12px 17px;
+        border-radius: 8px;
+        background: #3988ff;
+        color: white;
+        font-size: 12px;
+        font-weight: 700;
+        transition: .2s;
+    }
+
+    .hero-boton:hover {
+        transform: translateY(-3px);
+        filter: brightness(1.12);
+    }
+
+    .resumen-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 15px;
+        margin-bottom: 28px;
+    }
+
+    .resumen-card {
+        padding: 19px;
+        border: 1px solid #263a56;
+        border-radius: 11px;
+        background: #111e32;
+    }
+
+    .resumen-card small {
+        color: #91a4be;
+        font-size: 10px;
+    }
+
+    .resumen-card strong {
+        display: block;
+        margin-top: 9px;
+        font-size: 25px;
+    }
+
+    .seccion-titulo {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 17px;
+    }
+
+    .seccion-titulo h2 {
+        font-size: 18px;
+    }
+
+    .seccion-titulo span {
+        color: #91a4be;
+        font-size: 11px;
+    }
+
+    .filtros {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 17px;
+        background: #111e32;
+        border: 1px solid #263a56;
+        border-radius: 11px;
+        margin-bottom: 20px;
+    }
+
+    .filtros input,
+    .filtros select {
+        min-width: 180px;
+        flex: 1;
+        padding: 11px 13px;
+        background: #0b1424;
+        border: 1px solid #30445f;
+        color: #edf4ff;
+        border-radius: 8px;
+        outline: none;
+        font-size: 12px;
+    }
+
+    .filtros input:focus,
+    .filtros select:focus {
+        border-color: #3988ff;
+    }
+
+    .boton-buscar {
+        padding: 11px 19px;
+        background: #3988ff;
+        color: white;
+        border: 0;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .boton-limpiar {
+        padding: 11px 14px;
+        background: #1b304b;
+        color: #b8d5ff;
+        border-radius: 8px;
+        font-size: 12px;
+    }
+
+    .pokemon-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .pokemon-card {
+        position: relative;
+        overflow: hidden;
+        padding: 16px;
+        background: #111e32;
+        border: 1px solid #263a56;
+        border-radius: 12px;
+        transition: transform .25s, border-color .25s, box-shadow .25s;
+    }
+
+    .pokemon-card:hover {
+        transform: translateY(-5px);
+        border-color: #3988ff;
+        box-shadow: 0 12px 30px rgba(0,0,0,.2);
+    }
+
+    .numero {
+        color: #8297b2;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .imagen-contenedor {
+        display: grid;
+        place-items: center;
+        height: 145px;
+        margin: 8px 0;
+        background: radial-gradient(circle, rgba(57,136,255,.12), transparent 68%);
+    }
+
+    .imagen-contenedor img {
+        width: 100%;
+        height: 140px;
+        object-fit: contain;
+        transition: transform .3s;
+    }
+
+    .pokemon-card:hover .imagen-contenedor img {
+        transform: scale(1.09);
+    }
+
+    .nombre-pokemon {
+        font-size: 15px;
+        margin-bottom: 10px;
+        text-transform: capitalize;
+    }
+
+    .tipos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        min-height: 25px;
+    }
+
+    .tipo {
+        padding: 5px 9px;
+        border-radius: 20px;
+        background: #1b3658;
+        color: #a9ceff;
+        font-size: 9px;
+    }
+
+    .ver-detalle {
+        display: block;
+        margin-top: 15px;
+        padding: 10px;
+        border: 1px solid #304b6d;
+        border-radius: 7px;
+        text-align: center;
+        color: #85baff;
+        font-size: 11px;
+        font-weight: 700;
+        transition: .2s;
+    }
+
+    .ver-detalle:hover {
+        background: rgba(57,136,255,.13);
+    }
+
+    .vacio {
+        grid-column: 1 / -1;
+        padding: 50px 20px;
+        background: #111e32;
+        border: 1px solid #263a56;
+        border-radius: 12px;
+        text-align: center;
+        color: #91a4be;
+    }
+
+    .paginacion {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        margin-top: 25px;
+        color: #91a4be;
+        font-size: 12px;
+    }
+
+    .paginacion a {
+        padding: 9px 14px;
+        background: #1b304b;
+        border-radius: 7px;
+        color: #b8d5ff;
+    }
+
+    @media(max-width: 1050px) {
+        .pokemon-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @media(max-width: 750px) {
+        .pokemon-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .resumen-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .hero {
+            padding: 27px;
+        }
+    }
+
+    @media(max-width: 420px) {
+        .pokemon-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+
+<section class="hero">
+    <div class="hero-contenido">
+        <div class="etiqueta">SISTEMA DE EXPLORACIÓN POKÉMON</div>
+
+        <h1>Descubre el mundo Pokémon</h1>
+
+        <p>
+            Explora las criaturas registradas en la Pokédex,
+            consulta sus características, habilidades, tipos
+            y estadísticas de combate.
+        </p>
+
+        <a href="{% url 'pokemon_lista' %}" class="hero-boton">
+            Administrar Pokémon
+        </a>
+    </div>
+</section>
+
+<section class="resumen-grid">
+    <div class="resumen-card">
+        <small>POKÉMON REGISTRADOS</small>
+        <strong>{{ pagina.paginator.count }}</strong>
+    </div>
+
+    <div class="resumen-card">
+        <small>TIPOS DISPONIBLES</small>
+        <strong>{{ tipos|length }}</strong>
+    </div>
+
+    <div class="resumen-card">
+        <small>PÁGINA ACTUAL</small>
+        <strong>{{ pagina.number }}</strong>
+    </div>
+</section>
+
+<div class="seccion-titulo">
+    <h2>Explorar Pokédex</h2>
+    <span>{{ pagina.paginator.count }} resultados</span>
+</div>
+
+<form method="GET" class="filtros">
+    <input
+        type="search"
+        name="buscar"
+        placeholder="Buscar Pokémon por nombre o número..."
+        value="{{ buscar }}"
+    >
+
+    <select name="tipo">
+        <option value="">Todos los tipos</option>
+
+        {% for tipo in tipos %}
+            <option value="{{ tipo.nombre }}"
+                {% if tipo_seleccionado == tipo.nombre %}selected{% endif %}>
+                {{ tipo.nombre }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="boton-buscar">Buscar</button>
+
+    <a href="{% url 'inicio' %}" class="boton-limpiar">Limpiar</a>
+</form>
+
+<div class="pokemon-grid">
+
+    {% for pokemon in pagina %}
+        <article class="pokemon-card">
+
+            <div class="numero">
+                N.º {{ pokemon.numero|stringformat:"03d" }}
+            </div>
+
+            <div class="imagen-contenedor">
+                {% if pokemon.imagen_oficial %}
+                    <img src="{{ pokemon.imagen_oficial }}"
+                         alt="{{ pokemon.nombre }}"
+                         loading="lazy">
+                {% elif pokemon.imagen %}
+                    <img src="{{ pokemon.imagen }}"
+                         alt="{{ pokemon.nombre }}"
+                         loading="lazy">
+                {% endif %}
+            </div>
+
+            <h3 class="nombre-pokemon">{{ pokemon.nombre }}</h3>
+
+            <div class="tipos">
+                {% for tipo in pokemon.tipos.all %}
+                    <span class="tipo">{{ tipo.nombre }}</span>
+                {% empty %}
+                    <span class="tipo">Sin tipo</span>
+                {% endfor %}
+            </div>
+
+            <a href="{% url 'detalle' pokemon.numero %}" class="ver-detalle">
+                Consultar información
+            </a>
+
+        </article>
+
+    {% empty %}
+        <div class="vacio">
+            No encontramos Pokémon con esos criterios de búsqueda.
+        </div>
+    {% endfor %}
+
+</div>
+
+{% if pagina.has_other_pages %}
+    <div class="paginacion">
+        {% if pagina.has_previous %}
+            <a href="?buscar={{ buscar|urlencode }}&tipo={{ tipo_seleccionado|urlencode }}&pagina={{ pagina.previous_page_number }}">
+                Anterior
+            </a>
+        {% endif %}
+
+        <span>Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+
+        {% if pagina.has_next %}
+            <a href="?buscar={{ buscar|urlencode }}&tipo={{ tipo_seleccionado|urlencode }}&pagina={{ pagina.next_page_number }}">
+                Siguiente
+            </a>
+        {% endif %}
+    </div>
+{% endif %}
+
+{% endblock %}

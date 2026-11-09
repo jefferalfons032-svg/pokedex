@@ -1,0 +1,87 @@
+
+{% extends "pokemon/base.html" %}
+
+{% block titulo %}{{ titulo }} | Pokédex{% endblock %}
+{% block encabezado %}{{ titulo }}{% endblock %}
+
+{% block estilos %}
+<style>
+.admin-form-page { max-width:1000px; animation:formEntrada .35s ease; }
+.admin-form-heading { margin-bottom:24px; }
+.admin-form-heading h1 { font-size:28px; margin-bottom:8px; }
+.admin-form-heading p { color:#91a4be; font-size:14px; line-height:1.6; }
+.admin-form-panel { background:#111e32; border:1px solid #263a56; border-radius:14px; overflow:hidden; }
+.admin-form-header { padding:21px 25px; background:#14243b; border-bottom:1px solid #263a56; }
+.admin-form-header h2 { font-size:17px; margin-bottom:5px; }
+.admin-form-header p { font-size:13px; color:#91a4be; }
+.admin-form-body { padding:26px; }
+.admin-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px; }
+.admin-field { display:flex; flex-direction:column; gap:9px; min-width:0; }
+.admin-field-full { grid-column:1/-1; }
+.admin-field label { color:#d4e1f2; font-size:14px; font-weight:700; }
+.admin-field input:not([type=checkbox]):not([type=file]), .admin-field select, .admin-field textarea { width:100%; min-height:47px; padding:12px 14px; border:1px solid #354b69; border-radius:9px; background:#0b1424; color:#edf4ff; outline:none; font:inherit; font-size:14px; transition:.2s; }
+.admin-field textarea { min-height:105px; resize:vertical; }
+.admin-field input:focus, .admin-field select:focus, .admin-field textarea:focus { border-color:#3988ff; box-shadow:0 0 0 4px rgba(57,136,255,.12); }
+.admin-field select[multiple] { min-height:130px; }
+.admin-field select option { background:#0b1424; }
+.admin-field input[type=checkbox] { width:20px; height:20px; accent-color:#3988ff; }
+.admin-field input[type=file] { color:#cbd9eb; font-size:13px; }
+.admin-field .helptext, .admin-help { color:#91a4be; font-size:12px; line-height:1.6; }
+.admin-field ul.errorlist { margin:0; padding:0; list-style:none; color:#ff929c; font-size:12px; }
+.admin-form-errors { padding:14px; margin-bottom:20px; border:1px solid rgba(241,109,122,.3); border-radius:9px; background:rgba(241,109,122,.1); color:#ffabb2; font-size:13px; }
+.admin-form-actions { display:flex; justify-content:flex-end; gap:11px; padding-top:23px; margin-top:27px; border-top:1px solid #263a56; }
+.admin-form-button { display:inline-flex; justify-content:center; align-items:center; min-height:46px; padding:11px 19px; border:0; border-radius:9px; text-decoration:none; font-size:13px; font-weight:700; cursor:pointer; transition:.2s; }
+.admin-form-button:hover { transform:translateY(-2px); filter:brightness(1.1); }
+.admin-save { background:#3988ff; color:white; }
+.admin-cancel { background:#263b57; color:#d4e1f2; }
+@keyframes formEntrada { from {opacity:0; transform:translateY(8px)} to {opacity:1; transform:translateY(0)} }
+@media(max-width:650px) { .admin-form-grid {grid-template-columns:1fr} .admin-field-full {grid-column:auto} .admin-form-body {padding:18px} .admin-form-actions {flex-direction:column-reverse} .admin-form-button {width:100%} }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="admin-form-page">
+    <div class="admin-form-heading">
+        <h1>{{ titulo }}</h1>
+        <p>Completa la información. Las relaciones disponibles se cargarán desde los registros existentes.</p>
+    </div>
+
+    <section class="admin-form-panel">
+        <header class="admin-form-header">
+            <h2>Información del registro</h2>
+            <p>Los campos obligatorios deben completarse antes de guardar.</p>
+        </header>
+
+        <form method="POST" class="admin-form-body">
+            {% csrf_token %}
+
+            {% if formulario.non_field_errors or formulario.errors %}
+                <div class="admin-form-errors">
+                    Revisa los campos marcados. No se guardó la información todavía.
+                    {{ formulario.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="admin-form-grid">
+                {% for campo in formulario %}
+                    <div class="admin-field {% if campo.field.widget.attrs.class == 'campo-formulario' and campo.field.widget.attrs.rows > 3 %}admin-field-full{% endif %}">
+                        <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                        {{ campo }}
+
+                        {% if campo.help_text %}
+                            <span class="admin-help">{{ campo.help_text }}</span>
+                        {% endif %}
+
+                        {{ campo.errors }}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="admin-form-actions">
+                <a class="admin-form-button admin-cancel" href="{% url 'administracion_lista' modelo %}">Cancelar</a>
+                <button class="admin-form-button admin-save" type="submit">{{ accion }}</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

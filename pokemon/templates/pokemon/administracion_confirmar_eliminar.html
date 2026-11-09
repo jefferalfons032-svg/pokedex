@@ -1,0 +1,38 @@
+
+{% extends "pokemon/base.html" %}
+
+{% block titulo %}Eliminar registro | Pokédex{% endblock %}
+{% block encabezado %}Confirmar eliminación{% endblock %}
+
+{% block estilos %}
+<style>
+.delete-panel { max-width:650px; margin:35px auto; padding:30px; background:#111e32; border:1px solid #354b69; border-radius:14px; text-align:center; animation:deleteEntrada .3s ease; }
+.delete-symbol { width:55px; height:55px; display:grid; place-items:center; margin:0 auto 20px; border-radius:50%; background:rgba(241,109,122,.13); color:#ff929c; font-size:25px; font-weight:800; }
+.delete-panel h1 { font-size:23px; margin-bottom:12px; }
+.delete-panel p { color:#a4b5cc; font-size:14px; line-height:1.7; margin-bottom:24px; }
+.delete-actions { display:flex; justify-content:center; gap:12px; }
+.delete-button { padding:12px 18px; border:0; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; text-decoration:none; }
+.delete-confirm { background:#c84454; color:white; }
+.delete-cancel { background:#263b57; color:#d4e1f2; }
+@keyframes deleteEntrada { from {opacity:0; transform:translateY(8px)} to {opacity:1; transform:translateY(0)} }
+@media(max-width:500px) { .delete-actions {flex-direction:column} }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<section class="delete-panel">
+    <div class="delete-symbol">!</div>
+    <h1>¿Eliminar este registro?</h1>
+    <p>
+        Vas a eliminar <strong>{{ objeto }}</strong>.
+        Esta acción no se puede deshacer. Si otros registros dependen de este,
+        el sistema impedirá su eliminación.
+    </p>
+
+    <form method="POST" class="delete-actions">
+        {% csrf_token %}
+        <a class="delete-button delete-cancel" href="{% url 'administracion_lista' modelo %}">Cancelar</a>
+        <button type="submit" class="delete-button delete-confirm">Sí, eliminar</button>
+    </form>
+</section>
+{% endblock %}

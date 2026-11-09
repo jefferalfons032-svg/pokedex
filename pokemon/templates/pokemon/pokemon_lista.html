@@ -1,0 +1,1323 @@
+
+{% extends "pokemon/base.html" %}
+
+{% block titulo %}Pokémon | Pokédex{% endblock %}
+{% block encabezado %}Centro de control Pokémon{% endblock %}
+
+{% block estilos %}
+<style>
+    /* =========================================
+       CENTRO DE CONTROL POKÉMON
+    ========================================= */
+
+    .pokedex {
+        display: flex;
+        flex-direction: column;
+        gap: 23px;
+        color: #edf4ff;
+        animation: entradaPokedex .5s ease both;
+    }
+
+    @keyframes entradaPokedex {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ENCABEZADO */
+
+    .pokedex-hero {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 25px;
+        overflow: hidden;
+        padding: 29px;
+        border: 1px solid #344e70;
+        border-radius: 18px;
+        background:
+            radial-gradient(circle at 90% 50%, rgba(57,136,255,.20), transparent 35%),
+            linear-gradient(115deg, #172c49, #101c30 75%);
+        box-shadow: 0 15px 40px rgba(0,0,0,.18);
+    }
+
+    .pokedex-hero::after {
+        position: absolute;
+        top: -100px;
+        right: 100px;
+        width: 250px;
+        height: 250px;
+        border: 1px solid rgba(128,184,255,.09);
+        border-radius: 50%;
+        box-shadow:
+            0 0 0 25px rgba(128,184,255,.025),
+            0 0 0 50px rgba(128,184,255,.02);
+        content: "";
+        pointer-events: none;
+    }
+
+    .hero-texto {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-etiqueta {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 13px;
+        color: #ff8794;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+    }
+
+    .hero-etiqueta::before {
+        width: 20px;
+        height: 2px;
+        border-radius: 5px;
+        background: #ef4056;
+        content: "";
+    }
+
+    .hero-texto h1 {
+        margin-bottom: 10px;
+        color: #f4f8ff;
+        font-size: clamp(25px, 3vw, 34px);
+        font-weight: 900;
+        letter-spacing: -1px;
+    }
+
+    .hero-texto p {
+        max-width: 520px;
+        color: #9db1cb;
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+    .hero-decoracion {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        width: 105px;
+        height: 105px;
+        flex-shrink: 0;
+        place-items: center;
+        border: 5px solid rgba(255,255,255,.85);
+        border-radius: 50%;
+        background: linear-gradient(
+            to bottom,
+            #ef4056 0%,
+            #ef4056 46%,
+            white 46%,
+            white 54%,
+            #dfe8f3 54%,
+            #dfe8f3 100%
+        );
+        box-shadow:
+            0 0 0 8px rgba(255,255,255,.05),
+            0 0 35px rgba(239,64,86,.18);
+        animation: flotarPokeball 4s ease-in-out infinite;
+    }
+
+    .hero-decoracion::after {
+        width: 27px;
+        height: 27px;
+        border: 6px solid white;
+        border-radius: 50%;
+        background: #172941;
+        content: "";
+    }
+
+    @keyframes flotarPokeball {
+        0%, 100% { transform: translateY(0) rotate(-5deg); }
+        50% { transform: translateY(-8px) rotate(5deg); }
+    }
+
+    .hero-boton {
+        position: relative;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        flex-shrink: 0;
+        padding: 13px 19px;
+        border: 1px solid rgba(255,255,255,.18);
+        border-radius: 10px;
+        background: linear-gradient(135deg, #ef4056, #c92d43);
+        color: white;
+        font-size: 11px;
+        font-weight: 900;
+        box-shadow: 0 8px 22px rgba(239,64,86,.22);
+        transition: .25s ease;
+    }
+
+    .hero-boton:hover {
+        transform: translateY(-3px);
+        background: linear-gradient(135deg, #fa596d, #d7354d);
+        box-shadow: 0 12px 28px rgba(239,64,86,.3);
+    }
+
+    .hero-boton span {
+        font-size: 19px;
+        line-height: 10px;
+    }
+
+    /* ESTADÍSTICAS GENERALES */
+
+    .resumen-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 15px;
+    }
+
+    .resumen-card {
+        position: relative;
+        display: flex;
+        min-height: 118px;
+        align-items: center;
+        gap: 16px;
+        overflow: hidden;
+        padding: 19px;
+        border: 1px solid #293f5c;
+        border-radius: 14px;
+        background: linear-gradient(140deg, #162942, #101c30);
+        transition: .25s ease;
+    }
+
+    .resumen-card:hover {
+        transform: translateY(-3px);
+        border-color: #466b96;
+    }
+
+    .resumen-icono {
+        display: grid;
+        width: 46px;
+        height: 46px;
+        flex-shrink: 0;
+        place-items: center;
+        border: 1px solid rgba(128,184,255,.2);
+        border-radius: 12px;
+        background: rgba(57,136,255,.12);
+        color: #83b9ff;
+        font-size: 18px;
+        font-weight: 900;
+    }
+
+    .resumen-card.rojo .resumen-icono {
+        border-color: rgba(239,64,86,.25);
+        background: rgba(239,64,86,.12);
+        color: #ff8290;
+    }
+
+    .resumen-card.verde .resumen-icono {
+        border-color: rgba(50,201,151,.25);
+        background: rgba(50,201,151,.1);
+        color: #68dfb7;
+    }
+
+    .resumen-datos {
+        min-width: 0;
+    }
+
+    .resumen-datos span {
+        display: block;
+        color: #91a7c2;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .7px;
+        text-transform: uppercase;
+    }
+
+    .resumen-datos strong {
+        display: block;
+        margin-top: 7px;
+        color: #f4f7ff;
+        font-size: 27px;
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    .resumen-datos small {
+        display: block;
+        margin-top: 7px;
+        color: #748ba9;
+        font-size: 10px;
+    }
+
+    /* PANEL PRINCIPAL */
+
+    .directorio {
+        overflow: hidden;
+        border: 1px solid #2b405d;
+        border-radius: 16px;
+        background: #101c2e;
+        box-shadow: 0 12px 35px rgba(0,0,0,.15);
+    }
+
+    .directorio-cabecera {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 18px;
+        padding: 21px 23px;
+        border-bottom: 1px solid #2a405c;
+        background: linear-gradient(120deg, #192d48, #142238);
+    }
+
+    .directorio-titulo h2 {
+        color: #f1f6ff;
+        font-size: 16px;
+        font-weight: 900;
+    }
+
+    .directorio-titulo p {
+        margin-top: 6px;
+        color: #879db9;
+        font-size: 11px;
+    }
+
+    .directorio-contador {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 11px;
+        border: 1px solid rgba(57,136,255,.25);
+        border-radius: 8px;
+        background: rgba(57,136,255,.1);
+        color: #9bc8ff;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    /* BÚSQUEDA */
+
+    .busqueda-zona {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 13px;
+        padding: 16px 22px;
+        border-bottom: 1px solid #263a55;
+        background: #111f33;
+    }
+
+    .busqueda-descripcion {
+        color: #91a4be;
+        font-size: 11px;
+    }
+
+    .buscador {
+        display: flex;
+        width: min(100%, 410px);
+        gap: 8px;
+    }
+
+    .buscador input {
+        min-width: 0;
+        flex: 1;
+        height: 41px;
+        padding: 10px 13px;
+        border: 1px solid #354d6d;
+        border-radius: 9px;
+        outline: none;
+        background: #0b1525;
+        color: #edf4ff;
+        font-size: 11px;
+        transition: .2s;
+    }
+
+    .buscador input:focus {
+        border-color: #579bfa;
+        box-shadow: 0 0 0 3px rgba(57,136,255,.12);
+    }
+
+    .buscador input::placeholder {
+        color: #7186a2;
+    }
+
+    .buscar-boton {
+        display: inline-flex;
+        min-width: 82px;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 15px;
+        border: 1px solid #4489dc;
+        border-radius: 9px;
+        background: #327bd0;
+        color: white;
+        font-size: 10px;
+        font-weight: 900;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .buscar-boton:hover {
+        transform: translateY(-2px);
+        background: #4895ed;
+    }
+
+    /* TABLA */
+
+    .tabla-scroll {
+        width: 100%;
+        overflow-x: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #385778 #101c2e;
+    }
+
+    .tabla-pokemon {
+        width: 100%;
+        min-width: 1180px;
+        border-collapse: collapse;
+    }
+
+    .tabla-pokemon thead {
+        background: #15243a;
+    }
+
+    .tabla-pokemon th {
+        padding: 15px 16px;
+        border-bottom: 1px solid #304762;
+        color: #91a7c3;
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: 1px;
+        text-align: left;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .tabla-pokemon td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #223650;
+        color: #d1deef;
+        font-size: 11px;
+        vertical-align: middle;
+    }
+
+    .tabla-pokemon tbody tr {
+        transition: background .22s ease;
+    }
+
+    .tabla-pokemon tbody tr:hover {
+        background: rgba(57,136,255,.075);
+    }
+
+    .tabla-pokemon tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* IDENTIDAD */
+
+    .identidad {
+        display: flex;
+        min-width: 205px;
+        align-items: center;
+        gap: 13px;
+    }
+
+    .imagen-marco {
+        position: relative;
+        display: grid;
+        width: 72px;
+        height: 72px;
+        flex-shrink: 0;
+        place-items: center;
+        overflow: hidden;
+        border: 1px solid #344e6d;
+        border-radius: 13px;
+        background:
+            radial-gradient(circle, rgba(69,143,221,.25), transparent 70%),
+            linear-gradient(145deg, #1b304c, #14243a);
+        transition: .25s ease;
+    }
+
+    .tabla-pokemon tr:hover .imagen-marco {
+        transform: scale(1.06);
+        border-color: #579bfa;
+        box-shadow: 0 5px 17px rgba(57,136,255,.15);
+    }
+
+    .imagen-pokemon {
+        width: 100%;
+        height: 100%;
+        padding: 5px;
+        object-fit: contain;
+    }
+
+    .imagen-fallback {
+        color: #82a9d6;
+        font-size: 23px;
+        font-weight: 900;
+    }
+
+    .identidad-info {
+        min-width: 0;
+    }
+
+    .numero-pokemon {
+        display: block;
+        margin-bottom: 5px;
+        color: #80b7f4;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 1px;
+    }
+
+    .nombre-pokemon {
+        display: block;
+        color: #f3f7ff;
+        font-size: 14px;
+        font-weight: 900;
+        text-transform: capitalize;
+    }
+
+    .subtitulo-pokemon {
+        display: block;
+        margin-top: 5px;
+        color: #7f95b1;
+        font-size: 9px;
+    }
+
+    /* TIPOS */
+
+    .tipos-lista {
+        display: flex;
+        max-width: 190px;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .tipo-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 9px;
+        border: 1px solid rgba(255,255,255,.18);
+        border-radius: 7px;
+        background: var(--color-tipo, #385779);
+        color: white;
+        font-size: 9px;
+        font-weight: 900;
+        text-transform: capitalize;
+        white-space: nowrap;
+        box-shadow: 0 3px 9px rgba(0,0,0,.12);
+        transition: transform .2s ease;
+    }
+
+    .tipo-chip:hover {
+        transform: translateY(-2px);
+    }
+
+    .tipo-indicador {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.9);
+    }
+
+    .sin-dato {
+        color: #778da9;
+        font-size: 10px;
+        font-style: italic;
+    }
+
+    /* HABILIDADES */
+
+    .habilidades-lista {
+        display: flex;
+        max-width: 200px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .habilidad-chip {
+        display: inline-flex;
+        max-width: 190px;
+        align-items: center;
+        gap: 7px;
+        overflow: hidden;
+        padding: 6px 9px;
+        border: 1px solid #354d6d;
+        border-radius: 7px;
+        background: #192c46;
+        color: #c9dcf5;
+        font-size: 9px;
+        font-weight: 800;
+        text-overflow: ellipsis;
+        text-transform: capitalize;
+        white-space: nowrap;
+        transition: .2s;
+    }
+
+    .habilidad-chip:hover {
+        border-color: #5797db;
+        background: #203b5d;
+        color: white;
+    }
+
+    .habilidad-letra {
+        display: grid;
+        width: 17px;
+        height: 17px;
+        flex-shrink: 0;
+        place-items: center;
+        border-radius: 5px;
+        background: #2b527c;
+        color: #a9d4ff;
+        font-size: 9px;
+        font-weight: 900;
+    }
+
+    .habilidades-total {
+        padding-left: 3px;
+        color: #83b9f6;
+        font-size: 9px;
+        font-weight: 800;
+    }
+
+    /* ESTADÍSTICAS */
+
+    .stats-mini {
+        display: flex;
+        min-width: 165px;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .stat-mini {
+        display: grid;
+        grid-template-columns: 28px 25px 1fr;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .stat-mini-nombre {
+        color: #8fa6c3;
+        font-size: 8px;
+        font-weight: 900;
+    }
+
+    .stat-mini-valor {
+        color: #e6f0ff;
+        font-size: 9px;
+        font-weight: 900;
+        text-align: right;
+    }
+
+    .stat-mini-barra {
+        height: 5px;
+        overflow: hidden;
+        border-radius: 10px;
+        background: #273b55;
+    }
+
+    .stat-mini-barra span {
+        display: block;
+        height: 100%;
+        width: var(--progreso, 0%);
+        max-width: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #3988ff, #80b8ff);
+        animation: crecerStat .8s ease both;
+    }
+
+    .stat-mini.salud .stat-mini-barra span {
+        background: linear-gradient(90deg, #23a879, #66e0b4);
+    }
+
+    .stat-mini.ataque .stat-mini-barra span {
+        background: linear-gradient(90deg, #d63e52, #ff8390);
+    }
+
+    .stat-mini.defensa .stat-mini-barra span {
+        background: linear-gradient(90deg, #b78b38, #f3ce78);
+    }
+
+    @keyframes crecerStat {
+        from { width: 0; }
+        to { width: var(--progreso, 0%); }
+    }
+
+    /* CLASIFICACIÓN */
+
+    .clasificacion {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 10px;
+        border: 1px solid #344a66;
+        border-radius: 8px;
+        background: rgba(110,142,179,.09);
+        color: #a9bed8;
+        font-size: 9px;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
+    .clasificacion.legendario {
+        border-color: rgba(231,181,77,.3);
+        background: rgba(231,181,77,.1);
+        color: #f4d486;
+    }
+
+    .clasificacion-punto {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    /* ACCIONES */
+
+    .acciones {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .accion {
+        display: inline-flex;
+        min-width: 34px;
+        min-height: 32px;
+        align-items: center;
+        justify-content: center;
+        padding: 7px 9px;
+        border: 1px solid #344e6d;
+        border-radius: 7px;
+        background: #1d334f;
+        color: #c7ddf7;
+        font-size: 9px;
+        font-weight: 900;
+        transition: .2s ease;
+        white-space: nowrap;
+    }
+
+    .accion:hover {
+        transform: translateY(-2px);
+        border-color: #579bfa;
+        background: #2a4e75;
+        color: white;
+    }
+
+    .accion.editar {
+        border-color: rgba(57,136,255,.25);
+        background: rgba(57,136,255,.1);
+        color: #9bc8ff;
+    }
+
+    .accion.eliminar {
+        border-color: rgba(239,64,86,.22);
+        background: rgba(239,64,86,.1);
+        color: #ff9ba4;
+    }
+
+    .accion.eliminar:hover {
+        border-color: #e34856;
+        background: rgba(239,64,86,.24);
+    }
+
+    /* SIN RESULTADOS */
+
+    .sin-resultados {
+        padding: 65px 20px;
+        text-align: center;
+    }
+
+    .sin-resultados-icono {
+        display: grid;
+        width: 65px;
+        height: 65px;
+        margin: 0 auto 17px;
+        place-items: center;
+        border: 1px solid #385474;
+        border-radius: 17px;
+        background: #1a2e48;
+        color: #8bb9ed;
+        font-size: 26px;
+        font-weight: 900;
+    }
+
+    .sin-resultados h3 {
+        margin-bottom: 8px;
+        color: #e8f1ff;
+        font-size: 16px;
+    }
+
+    .sin-resultados p {
+        color: #849ab6;
+        font-size: 11px;
+        line-height: 1.7;
+    }
+
+    /* PIE DE TABLA Y PAGINACIÓN */
+
+    .tabla-pie {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 13px;
+        padding: 17px 21px;
+        border-top: 1px solid #2a405c;
+        background: #142238;
+    }
+
+    .paginacion-info {
+        color: #91a7c3;
+        font-size: 10px;
+    }
+
+    .paginacion {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .pagina-boton {
+        display: inline-flex;
+        min-width: 34px;
+        min-height: 33px;
+        align-items: center;
+        justify-content: center;
+        padding: 7px 11px;
+        border: 1px solid #354d6d;
+        border-radius: 7px;
+        background: #1a2d47;
+        color: #c4d8f1;
+        font-size: 9px;
+        font-weight: 900;
+        transition: .2s;
+    }
+
+    .pagina-boton:hover {
+        transform: translateY(-2px);
+        border-color: #579bfa;
+        background: #2c5684;
+        color: white;
+    }
+
+    .pagina-actual {
+        border-color: #4389dc;
+        background: rgba(57,136,255,.18);
+        color: #a9d0ff;
+    }
+
+    /* RESPONSIVE */
+
+    @media (max-width: 1050px) {
+        .pokedex-hero {
+            padding: 23px;
+        }
+
+        .hero-decoracion {
+            width: 85px;
+            height: 85px;
+        }
+    }
+
+    @media (max-width: 750px) {
+        .pokedex-hero {
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .hero-decoracion {
+            display: none;
+        }
+
+        .hero-boton {
+            width: 100%;
+        }
+
+        .resumen-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .resumen-card:first-child {
+            grid-column: 1 / -1;
+        }
+
+        .busqueda-zona {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .buscador {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .pokedex-hero {
+            padding: 20px;
+        }
+
+        .hero-texto h1 {
+            font-size: 25px;
+        }
+
+        .resumen-grid {
+            gap: 9px;
+        }
+
+        .resumen-card {
+            min-height: 105px;
+            gap: 10px;
+            padding: 12px;
+        }
+
+        .resumen-icono {
+            width: 36px;
+            height: 36px;
+            font-size: 14px;
+        }
+
+        .resumen-datos strong {
+            font-size: 22px;
+        }
+
+        .directorio-cabecera {
+            padding: 17px;
+        }
+
+        .tabla-pie {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+
+<div class="pokedex">
+
+    <!-- ENCABEZADO PRINCIPAL -->
+
+    <section class="pokedex-hero">
+
+        <div class="hero-texto">
+            <span class="hero-etiqueta">Sistema de exploración</span>
+
+            <h1>Tu mundo Pokémon</h1>
+
+            <p>
+                Administra tu colección, consulta los elementos, habilidades
+                y características de cada Pokémon desde un solo lugar.
+            </p>
+        </div>
+
+        <div class="hero-decoracion"></div>
+
+        <a href="{% url 'pokemon_crear' %}" class="hero-boton">
+            <span>+</span>
+            Registrar Pokémon
+        </a>
+
+    </section>
+
+    <!-- RESUMEN -->
+
+    <section class="resumen-grid">
+
+        <article class="resumen-card rojo">
+            <div class="resumen-icono">P</div>
+
+            <div class="resumen-datos">
+                <span>Total de Pokémon</span>
+                <strong>{{ total_pokemones }}</strong>
+                <small>Registros de tu Pokédex</small>
+            </div>
+        </article>
+
+        <article class="resumen-card">
+            <div class="resumen-icono">#</div>
+
+            <div class="resumen-datos">
+                <span>Página actual</span>
+                <strong>{{ pagina.number }}</strong>
+                <small>De {{ pagina.paginator.num_pages }} páginas</small>
+            </div>
+        </article>
+
+        <article class="resumen-card verde">
+            <div class="resumen-icono">✓</div>
+
+            <div class="resumen-datos">
+                <span>En esta página</span>
+                <strong>{{ pagina|length }}</strong>
+                <small>Pokémon mostrados</small>
+            </div>
+        </article>
+
+    </section>
+
+    <!-- DIRECTORIO -->
+
+    <section class="directorio">
+
+        <div class="directorio-cabecera">
+
+            <div class="directorio-titulo">
+                <h2>Directorio de Pokémon</h2>
+                <p>Consulta toda la información de los Pokémon registrados.</p>
+            </div>
+
+            <span class="directorio-contador">
+                {{ total_pokemones }} REGISTROS
+            </span>
+
+        </div>
+
+        <!-- BÚSQUEDA -->
+
+        <div class="busqueda-zona">
+
+            <span class="busqueda-descripcion">
+                Busca por nombre o número de Pokédex.
+            </span>
+
+            <form method="GET" class="buscador">
+
+                <input
+                    type="text"
+                    name="buscar"
+                    placeholder="Ejemplo: Pikachu o 25..."
+                    value="{{ buscar|default:'' }}"
+                    autocomplete="off"
+                >
+
+                <button type="submit" class="buscar-boton">
+                    Buscar
+                </button>
+
+            </form>
+
+        </div>
+
+        <!-- TABLA -->
+
+        <div class="tabla-scroll">
+
+            <table class="tabla-pokemon">
+
+                <thead>
+                    <tr>
+                        <th>Pokémon</th>
+                        <th>Elementos / Tipos</th>
+                        <th>Habilidades</th>
+                        <th>Estadísticas</th>
+                        <th>Clasificación</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for pokemon in pagina %}
+
+                    <tr>
+
+                        <!-- IDENTIDAD -->
+
+                        <td>
+                            <div class="identidad">
+
+                                <div class="imagen-marco">
+
+                                    {% if pokemon.url_imagen %}
+
+                                        <img
+                                            src="{{ pokemon.url_imagen }}"
+                                            alt="{{ pokemon.nombre }}"
+                                            class="imagen-pokemon"
+                                            loading="lazy"
+                                            onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='block';"
+                                        >
+
+                                        <span
+                                            class="imagen-fallback"
+                                            style="display:none;"
+                                        >?</span>
+
+                                    {% else %}
+
+                                        <span class="imagen-fallback">?</span>
+
+                                    {% endif %}
+
+                                </div>
+
+                                <div class="identidad-info">
+
+                                    <span class="numero-pokemon">
+                                        N.º {{ pokemon.numero|stringformat:"03d" }}
+                                    </span>
+
+                                    <span class="nombre-pokemon">
+                                        {{ pokemon.nombre }}
+                                    </span>
+
+                                    <span class="subtitulo-pokemon">
+                                        Registro de Pokédex
+                                    </span>
+
+                                </div>
+
+                            </div>
+                        </td>
+
+                        <!-- TIPOS -->
+
+                        <td>
+
+                            <div class="tipos-lista">
+
+                                {% for tipo in pokemon.tipos.all %}
+
+                                    <span
+                                        class="tipo-chip"
+                                        style="--color-tipo: {{ tipo.color|default:'#385779' }};"
+                                    >
+                                        <span class="tipo-indicador"></span>
+                                        {{ tipo.nombre }}
+                                    </span>
+
+                                {% empty %}
+
+                                    <span class="sin-dato">
+                                        Sin tipos registrados
+                                    </span>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </td>
+
+                        <!-- HABILIDADES -->
+
+                        <td>
+
+                            <div class="habilidades-lista">
+
+                                {% for habilidad in pokemon.habilidades.all|slice:":2" %}
+
+                                    <span
+                                        class="habilidad-chip"
+                                        title="{{ habilidad.descripcion|default:'Habilidad del Pokémon' }}"
+                                    >
+                                        <span class="habilidad-letra">H</span>
+                                        {{ habilidad.nombre }}
+                                    </span>
+
+                                {% empty %}
+
+                                    <span class="sin-dato">
+                                        Sin habilidades
+                                    </span>
+
+                                {% endfor %}
+
+                                {% if pokemon.habilidades.count > 2 %}
+                                    <span class="habilidades-total">
+                                        +{{ pokemon.habilidades.count|add:"-2" }} habilidades más
+                                    </span>
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+                        <!-- ESTADÍSTICAS -->
+
+                        <td>
+
+                            <div class="stats-mini">
+
+                                <div class="stat-mini salud">
+                                    <span class="stat-mini-nombre">PS</span>
+                                    <span class="stat-mini-valor">{{ pokemon.hp|default:0 }}</span>
+                                    <div class="stat-mini-barra">
+                                        <span style="--progreso: {% widthratio pokemon.hp|default:0 255 100 %}%;"></span>
+                                    </div>
+                                </div>
+
+                                <div class="stat-mini ataque">
+                                    <span class="stat-mini-nombre">ATQ</span>
+                                    <span class="stat-mini-valor">{{ pokemon.ataque|default:0 }}</span>
+                                    <div class="stat-mini-barra">
+                                        <span style="--progreso: {% widthratio pokemon.ataque|default:0 255 100 %}%;"></span>
+                                    </div>
+                                </div>
+
+                                <div class="stat-mini defensa">
+                                    <span class="stat-mini-nombre">DEF</span>
+                                    <span class="stat-mini-valor">{{ pokemon.defensa|default:0 }}</span>
+                                    <div class="stat-mini-barra">
+                                        <span style="--progreso: {% widthratio pokemon.defensa|default:0 255 100 %}%;"></span>
+                                    </div>
+                                </div>
+
+                                <div class="stat-mini">
+                                    <span class="stat-mini-nombre">VEL</span>
+                                    <span class="stat-mini-valor">{{ pokemon.velocidad|default:0 }}</span>
+                                    <div class="stat-mini-barra">
+                                        <span style="--progreso: {% widthratio pokemon.velocidad|default:0 255 100 %}%;"></span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                        <!-- CLASIFICACIÓN -->
+
+                        <td>
+
+                            {% if pokemon.es_legendario %}
+
+                                <span class="clasificacion legendario">
+                                    <span class="clasificacion-punto"></span>
+                                    Legendario
+                                </span>
+
+                            {% else %}
+
+                                <span class="clasificacion">
+                                    <span class="clasificacion-punto"></span>
+                                    Normal
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- ACCIONES -->
+
+                        <td>
+
+                            <div class="acciones">
+
+                                <a
+                                    href="{% url 'detalle' pokemon.numero %}"
+                                    class="accion"
+                                    title="Ver información completa"
+                                >
+                                    Ver
+                                </a>
+
+                                <a
+                                    href="{% url 'pokemon_editar' pokemon.numero %}"
+                                    class="accion editar"
+                                    title="Editar Pokémon"
+                                >
+                                    Editar
+                                </a>
+
+                                <a
+                                    href="{% url 'pokemon_eliminar' pokemon.numero %}"
+                                    class="accion eliminar"
+                                    title="Eliminar Pokémon"
+                                >
+                                    Eliminar
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="6">
+
+                            <div class="sin-resultados">
+
+                                <div class="sin-resultados-icono">?</div>
+
+                                <h3>No se encontraron Pokémon</h3>
+
+                                <p>
+                                    No encontramos resultados para tu búsqueda.
+                                    Prueba con otro nombre o número de Pokédex.
+                                </p>
+
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- PAGINACIÓN -->
+
+        <div class="tabla-pie">
+
+            <span class="paginacion-info">
+                Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}
+                · {{ total_pokemones }} Pokémon registrados
+            </span>
+
+            {% if pagina.has_other_pages %}
+
+                <div class="paginacion">
+
+                    {% if pagina.has_previous %}
+
+                        <a
+                            href="?buscar={{ buscar|urlencode }}&pagina={{ pagina.previous_page_number }}"
+                            class="pagina-boton"
+                        >
+                            Anterior
+                        </a>
+
+                    {% endif %}
+
+                    <span class="pagina-boton pagina-actual">
+                        {{ pagina.number }}
+                    </span>
+
+                    {% if pagina.has_next %}
+
+                        <a
+                            href="?buscar={{ buscar|urlencode }}&pagina={{ pagina.next_page_number }}"
+                            class="pagina-boton"
+                        >
+                            Siguiente
+                        </a>
+
+                    {% endif %}
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

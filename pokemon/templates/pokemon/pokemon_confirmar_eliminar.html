@@ -1,0 +1,146 @@
+
+{% extends "pokemon/base.html" %}
+
+{% block titulo %}Eliminar Pokémon | Pokédex{% endblock %}
+{% block encabezado %}Administración de Pokémon{% endblock %}
+
+{% block estilos %}
+<style>
+    .contenedor-confirmacion {
+        max-width: 650px;
+        margin: 45px auto;
+        background: #111e32;
+        border: 1px solid #263a56;
+        border-radius: 15px;
+        padding: 35px;
+        text-align: center;
+    }
+
+    .icono-alerta {
+        width: 70px;
+        height: 70px;
+        display: grid;
+        place-items: center;
+        margin: 0 auto 22px;
+        border-radius: 50%;
+        background: rgba(241, 109, 122, .12);
+        color: #ff8792;
+        font-size: 30px;
+    }
+
+    .contenedor-confirmacion h1 {
+        font-size: 23px;
+        margin-bottom: 12px;
+    }
+
+    .descripcion {
+        color: #91a4be;
+        font-size: 13px;
+        line-height: 1.7;
+        margin-bottom: 24px;
+    }
+
+    .pokemon-seleccionado {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 17px;
+        background: #172840;
+        border: 1px solid #263a56;
+        border-radius: 11px;
+        margin-bottom: 25px;
+        text-align: left;
+    }
+
+    .pokemon-seleccionado img {
+        width: 75px;
+        height: 75px;
+        object-fit: contain;
+    }
+
+    .pokemon-seleccionado h2 {
+        font-size: 17px;
+        margin-bottom: 6px;
+    }
+
+    .pokemon-seleccionado p {
+        color: #91a4be;
+        font-size: 11px;
+    }
+
+    .acciones {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .boton {
+        padding: 12px 20px;
+        border: 0;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .boton-cancelar {
+        background: #1b304b;
+        color: #c6d4e7;
+    }
+
+    .boton-eliminar {
+        background: #d94d5c;
+        color: white;
+    }
+
+    .boton:hover {
+        filter: brightness(1.12);
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+
+<section class="contenedor-confirmacion">
+
+    <div class="icono-alerta">!</div>
+
+    <h1>¿Eliminar este Pokémon?</h1>
+
+    <p class="descripcion">
+        Esta acción eliminará el registro de la Pokédex.
+        Comprueba que seleccionaste el Pokémon correcto antes de continuar.
+    </p>
+
+    <div class="pokemon-seleccionado">
+        {% if pokemon.imagen_oficial %}
+            <img src="{{ pokemon.imagen_oficial }}" alt="{{ pokemon.nombre }}">
+        {% elif pokemon.imagen %}
+            <img src="{{ pokemon.imagen }}" alt="{{ pokemon.nombre }}">
+        {% endif %}
+
+        <div>
+            <h2>{{ pokemon.nombre }}</h2>
+            <p>Número de Pokédex: {{ pokemon.numero|stringformat:"03d" }}</p>
+        </div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="acciones">
+            <a href="{% url 'pokemon_lista' %}" class="boton boton-cancelar">
+                Cancelar
+            </a>
+
+            <button type="submit" class="boton boton-eliminar">
+                Sí, eliminar Pokémon
+            </button>
+        </div>
+    </form>
+
+</section>
+
+{% endblock %}

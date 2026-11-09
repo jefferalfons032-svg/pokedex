@@ -1,0 +1,106 @@
+
+{% extends "pokemon/base.html" %}
+
+{% block titulo %}{{ titulo }} | Pokédex{% endblock %}
+{% block encabezado %}{{ titulo }}{% endblock %}
+
+{% block estilos %}
+<style>
+.admin-page { animation: adminEntrada .35s ease; }
+.admin-heading { display:flex; justify-content:space-between; align-items:center; gap:18px; flex-wrap:wrap; margin-bottom:25px; }
+.admin-heading h1 { font-size:28px; margin-bottom:7px; }
+.admin-heading p { color:#91a4be; font-size:14px; }
+.admin-button { display:inline-flex; align-items:center; justify-content:center; padding:12px 17px; border-radius:9px; background:#3988ff; color:white; font-size:13px; font-weight:700; text-decoration:none; transition:.2s; }
+.admin-button:hover { transform:translateY(-2px); filter:brightness(1.1); }
+.admin-panel { background:#111e32; border:1px solid #263a56; border-radius:13px; overflow:hidden; }
+.admin-tools { display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; padding:19px; border-bottom:1px solid #263a56; }
+.admin-search { display:flex; gap:9px; flex:1; max-width:520px; }
+.admin-search input { flex:1; min-width:0; padding:12px 14px; border:1px solid #354b69; border-radius:8px; background:#0b1424; color:#edf4ff; outline:none; font-size:14px; }
+.admin-search button { border:0; border-radius:8px; padding:0 17px; background:#263f60; color:white; cursor:pointer; }
+.admin-count { color:#91a4be; font-size:13px; }
+.admin-table-wrap { overflow-x:auto; }
+.admin-table { width:100%; border-collapse:collapse; min-width:650px; }
+.admin-table th { padding:15px 17px; background:#14243b; color:#9fb5d1; text-align:left; font-size:12px; }
+.admin-table td { padding:16px 17px; border-top:1px solid #263a56; color:#dce7f5; font-size:13px; }
+.admin-table tbody tr { transition:background .2s; }
+.admin-table tbody tr:hover { background:rgba(57,136,255,.06); }
+.row-actions { display:flex; gap:8px; }
+.action-link { padding:8px 11px; border-radius:7px; background:#1c3d66; color:#a9d0ff; font-size:12px; text-decoration:none; }
+.action-delete { background:rgba(241,109,122,.12); color:#ff9da7; }
+.empty-row { text-align:center; padding:35px !important; color:#91a4be !important; }
+.admin-pagination { display:flex; justify-content:center; align-items:center; gap:15px; padding:19px; border-top:1px solid #263a56; color:#a4b5cc; font-size:13px; }
+.admin-pagination a { color:#80b8ff; text-decoration:none; }
+@keyframes adminEntrada { from {opacity:0; transform:translateY(8px)} to {opacity:1; transform:translateY(0)} }
+@media(max-width:600px) { .admin-heading h1 {font-size:23px} .admin-search {max-width:none; width:100%} }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="admin-page">
+    <div class="admin-heading">
+        <div>
+            <h1>{{ titulo }}</h1>
+            <p>Consulta, registra, modifica y administra la información.</p>
+        </div>
+        <a class="admin-button" href="{% url 'administracion_crear' modelo %}">
+            + Agregar registro
+        </a>
+    </div>
+
+    <section class="admin-panel">
+        <div class="admin-tools">
+            <form class="admin-search" method="GET">
+                <input type="search" name="buscar" value="{{ buscar }}" placeholder="Buscar información...">
+                <button type="submit">Buscar</button>
+            </form>
+            <span class="admin-count">{{ total }} registros registrados</span>
+        </div>
+
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        {% for columna in columnas %}
+                            <th>{{ columna }}</th>
+                        {% endfor %}
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fila in filas %}
+                        <tr>
+                            {% for valor in fila.valores %}
+                                <td>{{ valor|truncatechars:65 }}</td>
+                            {% endfor %}
+                            <td>
+                                <div class="row-actions">
+                                    <a class="action-link" href="{% url 'administracion_editar' modelo fila.id %}">Editar</a>
+                                    <a class="action-link action-delete" href="{% url 'administracion_eliminar' modelo fila.id %}">Eliminar</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td class="empty-row" colspan="20">
+                                No hay registros para mostrar. Puedes agregar el primero.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if pagina.has_other_pages %}
+            <div class="admin-pagination">
+                {% if pagina.has_previous %}
+                    <a href="?pagina={{ pagina.previous_page_number }}&buscar={{ buscar|urlencode }}">Anterior</a>
+                {% endif %}
+                <span>Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+                {% if pagina.has_next %}
+                    <a href="?pagina={{ pagina.next_page_number }}&buscar={{ buscar|urlencode }}">Siguiente</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

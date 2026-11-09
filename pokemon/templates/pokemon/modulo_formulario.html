@@ -1,0 +1,1972 @@
+
+{% extends "pokemon/base.html" %}
+
+{% block titulo %}{{ titulo }} | Pokédex{% endblock %}
+
+{% block encabezado %}
+<div class="encabezado-formulario">
+    <div class="encabezado-texto">
+        <span class="encabezado-etiqueta">CENTRO DE GESTIÓN POKÉMON</span>
+        <h1>{{ titulo }}</h1>
+        <p>Administra los registros y la información de tu mundo Pokémon.</p>
+    </div>
+
+    <a href="{% url 'modulo_lista' modulo %}" class="boton-volver">
+        <span aria-hidden="true">←</span>
+        Volver al módulo
+    </a>
+</div>
+{% endblock %}
+
+{% block estilos %}
+<style>
+/* =========================================================
+   FORMULARIO GENERAL
+========================================================= */
+
+.formulario-pagina {
+    width: 100%;
+    max-width: 1260px;
+    margin: 0 auto;
+    color: #edf4ff;
+    animation: entradaFormulario .35s ease both;
+}
+
+@keyframes entradaFormulario {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.encabezado-formulario {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.encabezado-etiqueta {
+    display: inline-block;
+    color: #f17b8a;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+.encabezado-formulario h1 {
+    margin: 8px 0;
+    color: #fff;
+    font-size: clamp(25px, 4vw, 36px);
+    font-weight: 900;
+}
+
+.encabezado-formulario p {
+    margin: 0;
+    color: #9fb2ca;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.boton-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 17px;
+    border: 1px solid #3b5877;
+    border-radius: 11px;
+    background: #192e47;
+    color: #eaf2ff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 800;
+    transition: .2s ease;
+}
+
+.boton-volver:hover {
+    border-color: #e34b5c;
+    background: #263e59;
+    transform: translateY(-2px);
+}
+
+/* =========================================================
+   PANEL PRINCIPAL
+========================================================= */
+
+.panel-formulario {
+    margin-top: 26px;
+    overflow: hidden;
+    border: 1px solid #304b68;
+    border-radius: 20px;
+    background: #14243a;
+    box-shadow: 0 20px 55px #0003;
+}
+
+.panel-superior {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 25px 28px;
+    border-bottom: 1px solid #304862;
+    background:
+        radial-gradient(circle at 90% 0%, #3b68913b, transparent 38%),
+        linear-gradient(115deg, #1d344f, #17283e);
+}
+
+.panel-icono {
+    display: grid;
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    place-items: center;
+    border: 1px solid #e34b5c75;
+    border-radius: 14px;
+    background: #e34b5c20;
+    color: #ff9eaa;
+    font-size: 27px;
+    font-weight: 900;
+}
+
+.panel-superior h2 {
+    margin: 0 0 6px;
+    color: #fff;
+    font-size: 19px;
+    font-weight: 900;
+}
+
+.panel-superior p {
+    margin: 0;
+    color: #a3b6cd;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.panel-contenido {
+    padding: 29px;
+}
+
+.mensaje-error-general {
+    margin-bottom: 23px;
+    padding: 16px 18px;
+    border: 1px solid #a84d5d;
+    border-radius: 12px;
+    background: #492a38;
+    color: #ffd7dd;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.mensaje-error-general ul {
+    margin: 8px 0 0;
+    padding-left: 20px;
+}
+
+/* =========================================================
+   DISTRIBUCIÓN DE CAMPOS
+========================================================= */
+
+.campos-formulario {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 23px;
+}
+
+.campo-formulario {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.campo-ancho {
+    grid-column: 1 / -1;
+}
+
+.campo-formulario > label {
+    color: #eaf1fc;
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.campo-formulario input:not([type="checkbox"]):not([type="file"]),
+.campo-formulario select,
+.campo-formulario textarea {
+    width: 100%;
+    min-height: 46px;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid #3b5573;
+    border-radius: 11px;
+    outline: none;
+    background: #0e1c2e;
+    color: #f3f7ff;
+    font-family: inherit;
+    font-size: 14px;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.campo-formulario input:focus,
+.campo-formulario select:focus,
+.campo-formulario textarea:focus {
+    border-color: #67a9ef;
+    background: #12263e;
+    box-shadow: 0 0 0 3px #5c9ce725;
+}
+
+.campo-formulario select option {
+    background: #14243a;
+    color: #fff;
+}
+
+.campo-formulario select[multiple] {
+    min-height: 145px;
+}
+
+.campo-formulario textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.campo-formulario input[type="file"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px;
+    border: 1px dashed #48627e;
+    border-radius: 11px;
+    background: #102138;
+    color: #c9d8ea;
+    font-size: 12px;
+}
+
+.campo-formulario input[type="file"]::file-selector-button {
+    margin-right: 12px;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: #294d72;
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.campo-formulario input[type="checkbox"] {
+    width: 19px;
+    height: 19px;
+    accent-color: #e34b5c;
+    cursor: pointer;
+}
+
+.campo-formulario:has(> input[type="checkbox"]) {
+    flex-direction: row;
+    align-items: center;
+    min-height: 48px;
+    padding: 11px 14px;
+    border: 1px solid #354d68;
+    border-radius: 11px;
+    background: #101f32;
+}
+
+.campo-formulario:has(> input[type="checkbox"]) label {
+    margin: 0;
+    cursor: pointer;
+}
+
+.ayuda-campo {
+    color: #91a7c1;
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+.error-campo {
+    color: #ff9fac;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.error-campo ul {
+    margin: 0;
+    padding-left: 19px;
+}
+
+/* =========================================================
+   IMÁGENES REGISTRADAS
+========================================================= */
+
+.imagen-actual {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px;
+    border: 1px solid #354d68;
+    border-radius: 12px;
+    background: #0e1c2e;
+}
+
+.imagen-actual img {
+    width: 105px;
+    height: 105px;
+    flex-shrink: 0;
+    object-fit: contain;
+    border: 1px solid #3b5572;
+    border-radius: 10px;
+    background: #1a3049;
+}
+
+.imagen-actual span {
+    color: #a8bad0;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+/* =========================================================
+   SELECTORES ESPECIALES
+========================================================= */
+
+.selector-panel {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 22px;
+    border: 1px solid #395674;
+    border-radius: 17px;
+    background:
+        radial-gradient(circle at 100% 0%, #315a8030, transparent 35%),
+        #0d1a2b;
+}
+
+.selector-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.selector-cabecera h3 {
+    margin: 0 0 8px;
+    color: #f5f8ff;
+    font-size: 19px;
+    font-weight: 900;
+}
+
+.selector-cabecera p {
+    max-width: 690px;
+    margin: 0;
+    color: #9eb2cb;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.selector-contador {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border: 1px solid #e34b5c70;
+    border-radius: 11px;
+    background: #e34b5c1b;
+    color: #ffc4cb;
+    font-size: 12px;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.selector-contador strong {
+    color: #fff;
+    font-size: 22px;
+}
+
+.selector-resumen {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 15px;
+    color: #9db0c8;
+    font-size: 12px;
+}
+
+.selector-resumen strong {
+    color: #e9f2ff;
+}
+
+.selector-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.selector-boton {
+    padding: 9px 13px;
+    border: 1px solid #465d78;
+    border-radius: 9px;
+    background: #1b3049;
+    color: #dce9fa;
+    font-size: 11px;
+    font-weight: 850;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.selector-boton:hover {
+    border-color: #e34b5c;
+    background: #452c3b;
+    color: #fff;
+}
+
+.medallas-herramientas,
+.pokemon-herramientas {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.5fr) minmax(160px, 1fr);
+    gap: 11px;
+    margin-bottom: 17px;
+}
+
+.selector-busqueda {
+    position: relative;
+}
+
+.selector-busqueda input,
+.selector-filtro {
+    width: 100%;
+    min-height: 46px;
+    box-sizing: border-box;
+    padding: 11px 13px;
+    border: 1px solid #354f6c;
+    border-radius: 10px;
+    outline: none;
+    background: #0e1c2e;
+    color: #f3f7ff;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.selector-busqueda input {
+    padding-left: 38px;
+}
+
+.selector-busqueda::before {
+    content: "⌕";
+    position: absolute;
+    top: 50%;
+    left: 13px;
+    transform: translateY(-55%);
+    color: #a8bed8;
+    font-size: 23px;
+    pointer-events: none;
+}
+
+.selector-busqueda input:focus,
+.selector-filtro:focus {
+    border-color: #5c9ce7;
+    box-shadow: 0 0 0 3px #5c9ce722;
+}
+
+.selector-filtro option {
+    background: #14263d;
+    color: white;
+}
+
+.selector-vacio {
+    grid-column: 1 / -1;
+    padding: 28px 16px;
+    border: 1px dashed #405a77;
+    border-radius: 12px;
+    color: #a9bad0;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.selector-ayuda {
+    margin: 16px 0 0;
+    color: #8198b4;
+    font-size: 11px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+/* =========================================================
+   MEDALLAS
+========================================================= */
+
+.medallas-resumen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 17px;
+}
+
+.medallas-resumen:empty {
+    display: none;
+}
+
+.medalla-chip {
+    padding: 7px 11px;
+    border: 1px solid #9b7a3f;
+    border-radius: 8px;
+    background: #3b3020;
+    color: #f4d89b;
+    font-size: 11px;
+    font-weight: 850;
+}
+
+.medallas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
+    gap: 13px;
+}
+
+.medalla-tarjeta {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 9px;
+    overflow: hidden;
+    padding: 15px;
+    border: 1px solid #665637;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #302a20, #1b2635);
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.medalla-tarjeta[hidden],
+.tarjeta-pokemon[hidden] {
+    display: none !important;
+}
+
+.medalla-tarjeta:hover {
+    transform: translateY(-3px);
+    border-color: #d8b66b;
+    background: linear-gradient(145deg, #453922, #24354a);
+}
+
+.medalla-tarjeta.seleccionada {
+    border-color: #e4bd68;
+    background: linear-gradient(145deg, #554321, #303044);
+    box-shadow: inset 0 0 0 1px #e4bd6845;
+}
+
+.medalla-tarjeta.seleccionada::after {
+    content: "✓";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: grid;
+    width: 24px;
+    height: 24px;
+    place-items: center;
+    border-radius: 50%;
+    background: #c69b45;
+    color: #171c25;
+    font-weight: 900;
+}
+
+.medalla-tarjeta input[type="checkbox"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.medalla-tarjeta:focus-within {
+    outline: 2px solid #e4bd68;
+    outline-offset: 3px;
+}
+
+.medalla-simbolo {
+    display: grid;
+    width: 46px;
+    height: 46px;
+    place-items: center;
+    border: 1px solid #c29b55;
+    border-radius: 13px;
+    background: #d4ad5b20;
+    color: #f1d18d;
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.medalla-imagen {
+    width: 100%;
+    height: 95px;
+    object-fit: contain;
+    border-radius: 9px;
+    background: #101c2b;
+}
+
+.medalla-nombre {
+    color: #ffe2a2;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.medalla-ciudad {
+    color: #edf3fc;
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.medalla-detalle {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    color: #aebed1;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.medalla-tipo {
+    display: inline-flex;
+    align-self: flex-start;
+    padding: 5px 8px;
+    border: 1px solid #526c83;
+    border-radius: 6px;
+    background: #263b50;
+    color: #d8eaff;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.medallas-original,
+.lista-original {
+    display: none;
+}
+
+/* =========================================================
+   SELECTOR DESPLEGABLE DE POKÉMON
+========================================================= */
+
+.selector-desplegable {
+    overflow: hidden;
+    border: 1px solid #3a5674;
+    border-radius: 12px;
+    background: #14263d;
+}
+
+.selector-desplegable summary {
+    display: flex;
+    min-height: 49px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 13px 17px;
+    color: #eaf3ff;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    list-style: none;
+}
+
+.selector-desplegable summary::-webkit-details-marker {
+    display: none;
+}
+
+.selector-desplegable summary::after {
+    content: "";
+    width: 9px;
+    height: 9px;
+    flex-shrink: 0;
+    border-right: 2px solid #9ec9f5;
+    border-bottom: 2px solid #9ec9f5;
+    transform: rotate(45deg) translateY(-3px);
+    transition: transform .2s ease;
+}
+
+.selector-desplegable[open] summary {
+    border-bottom: 1px solid #3a5674;
+    background: #1a304a;
+}
+
+.selector-desplegable[open] summary::after {
+    transform: rotate(225deg);
+}
+
+.selector-desplegable-contenido {
+    padding: 18px;
+}
+
+.pokemon-seleccionados {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.pokemon-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 9px;
+    border: 1px solid #3c6387;
+    border-radius: 8px;
+    background: #1b3854;
+    color: #e4f1ff;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.pokemon-chip button {
+    width: 22px;
+    height: 22px;
+    border: 0;
+    border-radius: 6px;
+    background: #344e69;
+    color: white;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.pokemon-chip button:hover {
+    background: #bd394d;
+}
+
+.selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    gap: 13px;
+}
+
+.tarjeta-pokemon {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    padding: 12px 10px 14px;
+    border: 1px solid #304762;
+    border-radius: 14px;
+    background: linear-gradient(155deg, #1a3049, #13243a);
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.tarjeta-pokemon:hover {
+    transform: translateY(-3px);
+    border-color: #659bcf;
+    background: #203b58;
+}
+
+.tarjeta-pokemon.seleccionado {
+    border-color: #e34b5c;
+    background: linear-gradient(155deg, #512b3b, #29283a);
+    box-shadow: inset 0 0 0 1px #e34b5c45;
+}
+
+.tarjeta-pokemon.seleccionado::after {
+    content: "✓";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: grid;
+    width: 23px;
+    height: 23px;
+    place-items: center;
+    border-radius: 50%;
+    background: #e34b5c;
+    color: white;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.tarjeta-pokemon input[type="checkbox"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.tarjeta-pokemon:focus-within {
+    outline: 2px solid #75b4f4;
+    outline-offset: 3px;
+}
+
+.tarjeta-imagen {
+    display: grid;
+    width: 100%;
+    height: 110px;
+    place-items: center;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    background: radial-gradient(circle, #42658a4a, #1b3049 70%, transparent);
+}
+
+.tarjeta-imagen img {
+    width: 105px;
+    height: 105px;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 5px #0005);
+}
+
+.tarjeta-numero {
+    align-self: flex-start;
+    margin: 0 0 4px 2px;
+    color: #91a9c6;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.tarjeta-nombre {
+    width: 100%;
+    overflow: hidden;
+    color: #f1f6ff;
+    font-size: 13px;
+    font-weight: 900;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tarjeta-tipos {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.etiqueta-tipo {
+    padding: 4px 7px;
+    border: 1px solid #55708d;
+    border-radius: 6px;
+    background: #263e58;
+    color: #d8e8fa;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+/* =========================================================
+   BOTONES
+========================================================= */
+
+.formulario-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 31px;
+    padding-top: 24px;
+    border-top: 1px solid #30445e;
+}
+
+.boton-formulario {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 47px;
+    padding: 12px 22px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 900;
+    text-decoration: none;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.boton-formulario:hover {
+    transform: translateY(-2px);
+}
+
+.boton-guardar {
+    border-color: #e04b5d;
+    background: linear-gradient(135deg, #e34b5c, #b92b40);
+    color: white;
+    box-shadow: 0 6px 17px #c32e4538;
+}
+
+.boton-guardar:hover {
+    background: linear-gradient(135deg, #f05d6d, #cc344b);
+}
+
+.boton-cancelar {
+    border-color: #3b5572;
+    background: #1b3049;
+    color: #e2edfc;
+}
+
+.boton-cancelar:hover {
+    background: #29425f;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 760px) {
+    .panel-contenido {
+        padding: 20px;
+    }
+
+    .campos-formulario {
+        grid-template-columns: 1fr;
+        gap: 19px;
+    }
+
+    .campo-ancho {
+        grid-column: auto;
+    }
+
+    .medallas-herramientas,
+    .pokemon-herramientas {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .selector-busqueda {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 480px) {
+    .encabezado-formulario {
+        align-items: stretch;
+    }
+
+    .boton-volver {
+        justify-content: center;
+    }
+
+    .panel-superior {
+        padding: 19px;
+    }
+
+    .panel-contenido {
+        padding: 14px;
+    }
+
+    .selector-panel {
+        padding: 13px;
+    }
+
+    .selector-cabecera {
+        flex-direction: column;
+    }
+
+    .medallas-herramientas,
+    .pokemon-herramientas {
+        grid-template-columns: 1fr;
+    }
+
+    .selector-busqueda {
+        grid-column: auto;
+    }
+
+    .medallas-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    .medalla-tarjeta {
+        padding: 11px;
+    }
+
+    .selector-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    .tarjeta-pokemon {
+        padding: 8px;
+    }
+
+    .tarjeta-imagen {
+        height: 90px;
+    }
+
+    .tarjeta-imagen img {
+        width: 88px;
+        height: 88px;
+    }
+
+    .formulario-acciones {
+        flex-direction: column;
+    }
+
+    .boton-formulario {
+        width: 100%;
+    }
+
+    .imagen-actual {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .formulario-pagina,
+    .boton-volver,
+    .boton-formulario,
+    .tarjeta-pokemon,
+    .medalla-tarjeta {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="formulario-pagina">
+
+    <section class="panel-formulario">
+
+        <div class="panel-superior">
+            <div class="panel-icono">+</div>
+
+            <div>
+                <h2>Información del registro</h2>
+                <p>Completa los campos y verifica los datos antes de guardar.</p>
+            </div>
+        </div>
+
+        <div class="panel-contenido">
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% if formulario.non_field_errors %}
+                    <div class="mensaje-error-general">
+                        <strong>Hay información que debes revisar:</strong>
+                        {{ formulario.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="campos-formulario">
+
+                    {% for campo in formulario %}
+
+                        <div class="campo-formulario
+                            {% if campo.name == 'descripcion' or campo.name == 'pokemones_equipo' or campo.name == 'gimnasios' or campo.name == 'habilidades' or campo.name == 'tipos' or campo.name == 'evoluciones' or campo.name == 'items' or campo.name == 'pokemones' %}
+                                campo-ancho
+                            {% endif %}">
+
+                            {% if campo.name == "gimnasios" %}
+
+                                <section class="selector-panel" id="selector-medallas">
+
+                                    <div class="selector-cabecera">
+                                        <div>
+                                            <h3>Medallas del entrenador</h3>
+                                            <p>
+                                                Selecciona los gimnasios que ha superado.
+                                                Cada tarjeta representa un gimnasio registrado
+                                                y muestra su medalla, líder, ciudad y región.
+                                            </p>
+                                        </div>
+
+                                        <div class="selector-contador">
+                                            <strong id="medallas-contador">0</strong>
+                                            <span>medallas obtenidas</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="medallas-resumen"
+                                         id="medallas-seleccionadas"
+                                         aria-live="polite"></div>
+
+                                    <div class="medallas-herramientas">
+
+                                        <div class="selector-busqueda">
+                                            <input
+                                                type="search"
+                                                id="medallas-busqueda"
+                                                placeholder="Buscar medalla, gimnasio o líder..."
+                                                autocomplete="off"
+                                                aria-label="Buscar medallas"
+                                            >
+                                        </div>
+
+                                        <select id="medallas-region"
+                                                class="selector-filtro"
+                                                aria-label="Filtrar por región">
+                                            <option value="">Todas las regiones</option>
+                                        </select>
+
+                                    </div>
+
+                                    <div class="selector-resumen">
+                                        <span id="medallas-resultados">
+                                            Gimnasios disponibles
+                                        </span>
+
+                                        <div class="selector-acciones">
+                                            <button type="button"
+                                                    class="selector-boton"
+                                                    id="medallas-limpiar-filtros">
+                                                Limpiar filtros
+                                            </button>
+
+                                            <button type="button"
+                                                    class="selector-boton"
+                                                    id="medallas-limpiar">
+                                                Quitar todas
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="medallas-grid" id="medallas-grid"></div>
+
+                                    <div class="medallas-original">
+                                        {{ campo }}
+                                    </div>
+
+                                    <p class="selector-ayuda">
+                                        Puedes seleccionar varias medallas.
+                                        La cantidad se actualizará automáticamente.
+                                    </p>
+
+                                </section>
+
+                            {% elif campo.name == "pokemones_equipo" %}
+
+                                <section class="selector-panel" id="selector-pokemon">
+
+                                    <div class="selector-cabecera">
+                                        <div>
+                                            <h3>Equipo Pokémon del entrenador</h3>
+                                            <p>
+                                                Busca por nombre o número, filtra por generación
+                                                y tipo y selecciona los Pokémon que formarán parte
+                                                del equipo de este entrenador.
+                                            </p>
+                                        </div>
+
+                                        <div class="selector-contador">
+                                            <strong id="pokemon-contador">0</strong>
+                                            <span>seleccionados</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="pokemon-seleccionados"
+                                         id="pokemon-seleccionados"
+                                         aria-live="polite"></div>
+
+                                    <details class="selector-desplegable"
+                                             id="pokemon-desplegable">
+
+                                        <summary>
+                                            <span id="pokemon-texto-desplegable">
+                                                Abrir selector de Pokémon
+                                            </span>
+                                        </summary>
+
+                                        <div class="selector-desplegable-contenido">
+
+                                            <div class="pokemon-herramientas">
+
+                                                <div class="selector-busqueda">
+                                                    <input
+                                                        type="search"
+                                                        id="pokemon-busqueda"
+                                                        placeholder="Buscar por nombre o número..."
+                                                        autocomplete="off"
+                                                        aria-label="Buscar Pokémon"
+                                                    >
+                                                </div>
+
+                                                <select id="pokemon-generacion"
+                                                        class="selector-filtro"
+                                                        aria-label="Filtrar por generación">
+                                                    <option value="">Todas las generaciones</option>
+                                                    <option value="1">Generación I · Kanto</option>
+                                                    <option value="2">Generación II · Johto</option>
+                                                    <option value="3">Generación III · Hoenn</option>
+                                                    <option value="4">Generación IV · Sinnoh</option>
+                                                    <option value="5">Generación V · Unova</option>
+                                                    <option value="6">Generación VI · Kalos</option>
+                                                    <option value="7">Generación VII · Alola</option>
+                                                    <option value="8">Generación VIII · Galar</option>
+                                                    <option value="9">Generación IX · Paldea</option>
+                                                </select>
+
+                                                <select id="pokemon-tipo"
+                                                        class="selector-filtro"
+                                                        aria-label="Filtrar por tipo">
+                                                    <option value="">Todos los tipos</option>
+                                                </select>
+
+                                            </div>
+
+                                            <div class="selector-resumen">
+                                                <span id="pokemon-resultados">
+                                                    Pokémon disponibles
+                                                </span>
+
+                                                <div class="selector-acciones">
+                                                    <button type="button"
+                                                            class="selector-boton"
+                                                            id="pokemon-limpiar-filtros">
+                                                        Restablecer filtros
+                                                    </button>
+
+                                                    <button type="button"
+                                                            class="selector-boton"
+                                                            id="pokemon-limpiar-seleccion">
+                                                        Quitar selección
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div class="selector-grid" id="pokemon-grid"></div>
+
+                                            <p class="selector-ayuda">
+                                                Selecciona una tarjeta para agregar o quitar
+                                                un Pokémon del equipo.
+                                            </p>
+
+                                        </div>
+                                    </details>
+
+                                    <div class="lista-original">
+                                        {{ campo }}
+                                    </div>
+
+                                </section>
+
+                            {% else %}
+
+                                {{ campo.label_tag }}
+                                {{ campo }}
+
+                            {% endif %}
+
+                            {% if campo.name == "imagen_archivo" and campo.value %}
+                                <div class="imagen-actual">
+                                    <img src="{{ campo.value.url }}"
+                                         alt="Imagen registrada">
+                                    <span>
+                                        <strong>Imagen actual</strong><br>
+                                        Selecciona otro archivo si deseas reemplazarla.
+                                    </span>
+                                </div>
+                            {% endif %}
+
+                            {% if campo.name == "imagen" and campo.value %}
+                                <div class="imagen-actual">
+                                    <img src="{{ campo.value }}"
+                                         alt="Imagen actual"
+                                         onerror="this.style.display='none'">
+                                    <span>
+                                        <strong>Enlace registrado</strong><br>
+                                        Puedes cambiar la dirección web de la imagen.
+                                    </span>
+                                </div>
+                            {% endif %}
+
+                            {% if campo.help_text %}
+                                <span class="ayuda-campo">
+                                    {{ campo.help_text }}
+                                </span>
+                            {% endif %}
+
+                            {% if campo.errors %}
+                                <div class="error-campo">
+                                    {{ campo.errors }}
+                                </div>
+                            {% endif %}
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+                <div class="formulario-acciones">
+
+                    <button type="submit"
+                            class="boton-formulario boton-guardar">
+                        {{ accion|default:"Guardar registro" }}
+                    </button>
+
+                    <a href="{% url 'modulo_lista' modulo %}"
+                       class="boton-formulario boton-cancelar">
+                        Cancelar
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* =====================================================
+       FUNCIONES GENERALES
+    ===================================================== */
+
+    function normalizarTexto(texto) {
+        return String(texto || "")
+            .toLocaleLowerCase("es")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+    }
+
+    function crearMensajeVacio(contenedor, mensaje) {
+        const elemento = document.createElement("div");
+        elemento.className = "selector-vacio";
+        elemento.textContent = mensaje;
+        contenedor.appendChild(elemento);
+    }
+
+    function actualizarCampoDeshabilitado(id, cantidad) {
+        const campo = document.getElementById(id);
+
+        if (campo) {
+            campo.value = cantidad;
+        }
+    }
+
+
+    /* =====================================================
+       SELECTOR DE MEDALLAS
+    ===================================================== */
+
+    const selectorMedallas = document.getElementById("selector-medallas");
+
+    if (selectorMedallas) {
+
+        const formulario = selectorMedallas.closest("form");
+        const grid = document.getElementById("medallas-grid");
+        const contador = document.getElementById("medallas-contador");
+        const resumen = document.getElementById("medallas-seleccionadas");
+        const busqueda = document.getElementById("medallas-busqueda");
+        const filtroRegion = document.getElementById("medallas-region");
+        const resultados = document.getElementById("medallas-resultados");
+
+        const casillas = Array.from(
+            formulario.querySelectorAll('input[name="gimnasios"]')
+        );
+
+        const botonLimpiar = document.getElementById("medallas-limpiar");
+        const botonFiltros = document.getElementById("medallas-limpiar-filtros");
+
+        const medallas = casillas.map(function (input) {
+
+            const original = input.closest("label");
+
+            return {
+                input: input,
+                medalla: input.dataset.medalla || (
+                    original ? original.textContent.trim() : "Medalla"
+                ),
+                ciudad: input.dataset.ciudad || "",
+                lider: input.dataset.lider || "",
+                tipo: input.dataset.tipo || "",
+                region: input.dataset.region || "",
+                imagen: input.dataset.imagen || "",
+                tarjeta: null
+            };
+        });
+
+        /* Crear opciones de regiones */
+
+        const regiones = [
+            ...new Set(
+                medallas
+                    .map(item => item.region)
+                    .filter(Boolean)
+            )
+        ].sort((a, b) => a.localeCompare(b, "es"));
+
+        regiones.forEach(function (region) {
+            const opcion = document.createElement("option");
+            opcion.value = normalizarTexto(region);
+            opcion.textContent = region;
+            filtroRegion.appendChild(opcion);
+        });
+
+        /* Crear tarjeta de cada gimnasio */
+
+        function crearTarjetaMedalla(item) {
+
+            const tarjeta = document.createElement("label");
+            tarjeta.className = "medalla-tarjeta";
+
+            const input = item.input;
+
+            const simbolo = document.createElement("div");
+            simbolo.className = "medalla-simbolo";
+            simbolo.textContent = "M";
+
+            const nombre = document.createElement("div");
+            nombre.className = "medalla-nombre";
+            nombre.textContent = item.medalla;
+
+            const ciudad = document.createElement("div");
+            ciudad.className = "medalla-ciudad";
+            ciudad.textContent = item.ciudad || "Ciudad no registrada";
+
+            const detalle = document.createElement("div");
+            detalle.className = "medalla-detalle";
+
+            const lider = document.createElement("span");
+            lider.textContent = "Líder: " + (
+                item.lider || "No registrado"
+            );
+
+            const region = document.createElement("span");
+            region.textContent = "Región: " + (
+                item.region || "No registrada"
+            );
+
+            detalle.appendChild(lider);
+            detalle.appendChild(region);
+
+            const tipo = document.createElement("span");
+            tipo.className = "medalla-tipo";
+            tipo.textContent = item.tipo || "Tipo no registrado";
+
+            tarjeta.appendChild(input);
+
+            if (item.imagen) {
+
+                const imagen = document.createElement("img");
+                imagen.className = "medalla-imagen";
+                imagen.src = item.imagen;
+                imagen.alt = "Imagen de " + item.medalla;
+                imagen.loading = "lazy";
+
+                imagen.addEventListener("error", function () {
+                    this.remove();
+                    tarjeta.insertBefore(simbolo, nombre);
+                }, { once: true });
+
+                tarjeta.appendChild(imagen);
+
+            } else {
+                tarjeta.appendChild(simbolo);
+            }
+
+            tarjeta.appendChild(nombre);
+            tarjeta.appendChild(ciudad);
+            tarjeta.appendChild(detalle);
+            tarjeta.appendChild(tipo);
+
+            item.tarjeta = tarjeta;
+
+            input.addEventListener("change", actualizarMedallas);
+
+            actualizarEstadoMedalla(item);
+
+            return tarjeta;
+        }
+
+        function actualizarEstadoMedalla(item) {
+
+            if (!item.tarjeta) return;
+
+            item.tarjeta.classList.toggle(
+                "seleccionada",
+                item.input.checked
+            );
+        }
+
+        function actualizarMedallas() {
+
+            const seleccionadas = medallas.filter(
+                item => item.input.checked
+            );
+
+            contador.textContent = seleccionadas.length;
+
+            actualizarCampoDeshabilitado(
+                "id_cantidad_medallas",
+                seleccionadas.length
+            );
+
+            resumen.replaceChildren();
+
+            seleccionadas.forEach(function (item) {
+
+                const chip = document.createElement("span");
+                chip.className = "medalla-chip";
+                chip.textContent = item.medalla;
+
+                resumen.appendChild(chip);
+            });
+
+            medallas.forEach(actualizarEstadoMedalla);
+        }
+
+        function filtrarMedallas() {
+
+            const texto = normalizarTexto(busqueda.value);
+            const region = filtroRegion.value;
+
+            let visibles = 0;
+
+            medallas.forEach(function (item) {
+
+                const contenido = normalizarTexto([
+                    item.medalla,
+                    item.ciudad,
+                    item.lider,
+                    item.tipo,
+                    item.region
+                ].join(" "));
+
+                const coincideTexto = !texto || contenido.includes(texto);
+
+                const coincideRegion = (
+                    !region ||
+                    normalizarTexto(item.region) === region
+                );
+
+                const mostrar = coincideTexto && coincideRegion;
+
+                item.tarjeta.hidden = !mostrar;
+
+                if (mostrar) visibles++;
+            });
+
+            resultados.textContent =
+                visibles + " gimnasios encontrados de " +
+                medallas.length + " disponibles";
+
+            const anterior = grid.querySelector(".selector-vacio");
+
+            if (anterior) anterior.remove();
+
+            if (visibles === 0) {
+                crearMensajeVacio(
+                    grid,
+                    "No encontramos medallas con esos criterios de búsqueda."
+                );
+            }
+        }
+
+        medallas.forEach(function (item) {
+            grid.appendChild(crearTarjetaMedalla(item));
+        });
+
+        if (medallas.length === 0) {
+            crearMensajeVacio(
+                grid,
+                "No hay gimnasios registrados. Registra primero los gimnasios para asignar sus medallas."
+            );
+        }
+
+        busqueda.addEventListener("input", filtrarMedallas);
+        filtroRegion.addEventListener("change", filtrarMedallas);
+
+        botonLimpiar.addEventListener("click", function () {
+
+            medallas.forEach(function (item) {
+                item.input.checked = false;
+            });
+
+            actualizarMedallas();
+        });
+
+        botonFiltros.addEventListener("click", function () {
+
+            busqueda.value = "";
+            filtroRegion.value = "";
+
+            filtrarMedallas();
+        });
+
+        actualizarMedallas();
+        filtrarMedallas();
+    }
+
+
+    /* =====================================================
+       SELECTOR DE POKÉMON
+    ===================================================== */
+
+    const selectorPokemon = document.getElementById("selector-pokemon");
+
+    if (!selectorPokemon) return;
+
+    const formulario = selectorPokemon.closest("form");
+    const grid = document.getElementById("pokemon-grid");
+    const busqueda = document.getElementById("pokemon-busqueda");
+    const filtroGeneracion = document.getElementById("pokemon-generacion");
+    const filtroTipo = document.getElementById("pokemon-tipo");
+    const contador = document.getElementById("pokemon-contador");
+    const resultados = document.getElementById("pokemon-resultados");
+
+    const seleccionadosContenedor = document.getElementById(
+        "pokemon-seleccionados"
+    );
+
+    const desplegable = document.getElementById("pokemon-desplegable");
+
+    const textoDesplegable = document.getElementById(
+        "pokemon-texto-desplegable"
+    );
+
+    const botonLimpiarFiltros = document.getElementById(
+        "pokemon-limpiar-filtros"
+    );
+
+    const botonLimpiarSeleccion = document.getElementById(
+        "pokemon-limpiar-seleccion"
+    );
+
+    const casillas = Array.from(
+        formulario.querySelectorAll('input[name="pokemones_equipo"]')
+    );
+
+    function actualizarTextoDesplegable() {
+        textoDesplegable.textContent = desplegable.open
+            ? "Cerrar selector de Pokémon"
+            : "Abrir selector de Pokémon";
+    }
+
+    if (!casillas.length) {
+
+        crearMensajeVacio(
+            grid,
+            "No hay Pokémon disponibles para asignar. Registra Pokémon en el módulo correspondiente."
+        );
+
+        contador.textContent = "0";
+        resultados.textContent = "0 Pokémon disponibles";
+
+        actualizarCampoDeshabilitado("id_cantidad_pokemones", 0);
+
+        desplegable.addEventListener("toggle", actualizarTextoDesplegable);
+
+        return;
+    }
+
+    const pokemon = casillas.map(function (input) {
+
+        const etiquetaOriginal = input.closest("label");
+        const numero = Number(input.dataset.numero || 0);
+
+        const nombre =
+            input.dataset.nombre ||
+            (
+                etiquetaOriginal
+                    ? etiquetaOriginal.textContent.trim()
+                    : input.value
+            );
+
+        const tipos = (input.dataset.tipos || "")
+            .split(",")
+            .map(tipo => tipo.trim())
+            .filter(Boolean);
+
+        let imagen = input.dataset.imagen || "";
+
+        if (!imagen && numero > 0) {
+            imagen =
+                `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${numero}.png`;
+        }
+
+        return {
+            input,
+            numero,
+            nombre,
+            nombreNormalizado: normalizarTexto(nombre),
+            tipos,
+            generacion: input.dataset.generacion || "",
+            imagen,
+            tarjeta: null
+        };
+    });
+
+    /* Tipos disponibles */
+
+    const tiposDisponibles = [
+        ...new Set(pokemon.flatMap(item => item.tipos))
+    ].sort((a, b) => a.localeCompare(b, "es"));
+
+    tiposDisponibles.forEach(function (tipo) {
+
+        const opcion = document.createElement("option");
+
+        opcion.value = normalizarTexto(tipo);
+        opcion.textContent = tipo;
+
+        filtroTipo.appendChild(opcion);
+    });
+
+    /* Crear tarjetas */
+
+    function crearTarjeta(item) {
+
+        const tarjeta = document.createElement("label");
+        tarjeta.className = "tarjeta-pokemon";
+
+        const input = item.input;
+
+        const zonaImagen = document.createElement("div");
+        zonaImagen.className = "tarjeta-imagen";
+
+        const imagen = document.createElement("img");
+
+        imagen.alt = item.nombre;
+        imagen.loading = "lazy";
+        imagen.decoding = "async";
+
+        if (item.imagen) {
+            imagen.src = item.imagen;
+        } else {
+            imagen.style.display = "none";
+        }
+
+        imagen.addEventListener("error", function () {
+
+            if (
+                item.numero > 0 &&
+                this.dataset.intento !== "sprite"
+            ) {
+
+                this.dataset.intento = "sprite";
+
+                this.src =
+                    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${item.numero}.png`;
+
+            } else {
+                this.style.display = "none";
+            }
+        });
+
+        zonaImagen.appendChild(imagen);
+
+        const numeroTexto = document.createElement("span");
+
+        numeroTexto.className = "tarjeta-numero";
+
+        numeroTexto.textContent = item.numero
+            ? `N.º ${String(item.numero).padStart(4, "0")}`
+            : "Número no disponible";
+
+        const nombreTexto = document.createElement("span");
+
+        nombreTexto.className = "tarjeta-nombre";
+        nombreTexto.textContent = item.nombre;
+
+        const tiposContenedor = document.createElement("div");
+
+        tiposContenedor.className = "tarjeta-tipos";
+
+        if (item.tipos.length) {
+
+            item.tipos.forEach(function (tipo) {
+
+                const etiqueta = document.createElement("span");
+
+                etiqueta.className = "etiqueta-tipo";
+                etiqueta.textContent = tipo;
+
+                tiposContenedor.appendChild(etiqueta);
+            });
+
+        } else {
+
+            const etiqueta = document.createElement("span");
+
+            etiqueta.className = "etiqueta-tipo";
+            etiqueta.textContent = "Sin tipo";
+
+            tiposContenedor.appendChild(etiqueta);
+        }
+
+        /* Mover el checkbox original a la tarjeta */
+
+        input.remove();
+
+        tarjeta.appendChild(input);
+        tarjeta.appendChild(zonaImagen);
+        tarjeta.appendChild(numeroTexto);
+        tarjeta.appendChild(nombreTexto);
+        tarjeta.appendChild(tiposContenedor);
+
+        item.tarjeta = tarjeta;
+
+        input.addEventListener("change", actualizarSeleccion);
+
+        actualizarEstadoTarjeta(item);
+
+        return tarjeta;
+    }
+
+    function actualizarEstadoTarjeta(item) {
+
+        if (!item.tarjeta) return;
+
+        item.tarjeta.classList.toggle(
+            "seleccionado",
+            item.input.checked
+        );
+
+        item.tarjeta.setAttribute(
+            "aria-checked",
+            item.input.checked ? "true" : "false"
+        );
+    }
+
+    function actualizarSeleccion() {
+
+        const seleccionados = pokemon.filter(
+            item => item.input.checked
+        );
+
+        contador.textContent = seleccionados.length;
+
+        actualizarCampoDeshabilitado(
+            "id_cantidad_pokemones",
+            seleccionados.length
+        );
+
+        seleccionadosContenedor.replaceChildren();
+
+        seleccionados.forEach(function (item) {
+
+            const chip = document.createElement("span");
+            chip.className = "pokemon-chip";
+
+            const nombre = document.createElement("span");
+
+            nombre.textContent = item.numero
+                ? `#${item.numero} ${item.nombre}`
+                : item.nombre;
+
+            const quitar = document.createElement("button");
+
+            quitar.type = "button";
+            quitar.textContent = "×";
+
+            quitar.setAttribute(
+                "aria-label",
+                `Quitar ${item.nombre} del equipo`
+            );
+
+            quitar.addEventListener("click", function () {
+
+                item.input.checked = false;
+
+                actualizarSeleccion();
+            });
+
+            chip.appendChild(nombre);
+            chip.appendChild(quitar);
+
+            seleccionadosContenedor.appendChild(chip);
+        });
+
+        pokemon.forEach(actualizarEstadoTarjeta);
+    }
+
+    function aplicarFiltros() {
+
+        const texto = normalizarTexto(busqueda.value);
+        const generacion = filtroGeneracion.value;
+        const tipo = filtroTipo.value;
+
+        const numeroBuscado = texto.replace(/^#/, "").trim();
+
+        let visibles = 0;
+
+        pokemon.forEach(function (item) {
+
+            const coincideBusqueda =
+                !texto ||
+                item.nombreNormalizado.includes(texto) ||
+                (
+                    item.numero > 0 &&
+                    (
+                        String(item.numero) === numeroBuscado ||
+                        String(item.numero).padStart(3, "0") === numeroBuscado ||
+                        String(item.numero).padStart(4, "0") === numeroBuscado
+                    )
+                );
+
+            const coincideGeneracion =
+                !generacion || item.generacion === generacion;
+
+            const coincideTipo =
+                !tipo ||
+                item.tipos.some(
+                    elemento => normalizarTexto(elemento) === tipo
+                );
+
+            const mostrar =
+                coincideBusqueda &&
+                coincideGeneracion &&
+                coincideTipo;
+
+            item.tarjeta.hidden = !mostrar;
+
+            if (mostrar) visibles++;
+        });
+
+        resultados.textContent =
+            `${visibles} Pokémon encontrados de ${pokemon.length} disponibles`;
+
+        const anterior = grid.querySelector(".selector-vacio");
+
+        if (anterior) anterior.remove();
+
+        if (visibles === 0) {
+            crearMensajeVacio(
+                grid,
+                "No encontramos Pokémon con esos criterios. Prueba con otro nombre, número, generación o tipo."
+            );
+        }
+    }
+
+    pokemon.forEach(function (item) {
+        grid.appendChild(crearTarjeta(item));
+    });
+
+    desplegable.addEventListener("toggle", actualizarTextoDesplegable);
+
+    busqueda.addEventListener("input", aplicarFiltros);
+
+    filtroGeneracion.addEventListener("change", aplicarFiltros);
+
+    filtroTipo.addEventListener("change", aplicarFiltros);
+
+    botonLimpiarFiltros.addEventListener("click", function () {
+
+        busqueda.value = "";
+        filtroGeneracion.value = "";
+        filtroTipo.value = "";
+
+        aplicarFiltros();
+        busqueda.focus();
+    });
+
+    botonLimpiarSeleccion.addEventListener("click", function () {
+
+        pokemon.forEach(function (item) {
+            item.input.checked = false;
+        });
+
+        actualizarSeleccion();
+    });
+
+    /* Estado inicial: respeta las selecciones existentes */
+
+    actualizarTextoDesplegable();
+    actualizarSeleccion();
+    aplicarFiltros();
+
+});
+</script>
+{% endblock %}
